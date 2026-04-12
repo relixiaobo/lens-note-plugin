@@ -5,171 +5,36 @@ description: Store, query, and link knowledge in a persistent knowledge graph. U
 
 # lens — knowledge graph for agents
 
-lens is a CLI that stores, queries, and links structured knowledge. Like Git for code, lens is for knowledge. You do the thinking; lens does the storage.
-
-**Zero LLM dependency. Zero API keys.** lens never calls an LLM — you are the intelligence.
+lens stores, queries, and links structured knowledge. You do the thinking; lens does the storage.
 
 ## Setup
 
 Check if lens is installed: `which lens`
-
 If not installed: `npm install -g lens-note` then `lens init`
 
-## 5 Core Commands
+## How You Must Think
 
-```bash
-lens search "<query>" --json       # Find notes (multilingual, CJK-aware)
-lens show <id> --json              # Read one object with full detail + links
-echo '<json>' | lens write --json  # Write anything: note, source, link, batch
-lens fetch <url> [--save] --json   # Extract web content as clean markdown
-lens status --json                 # Knowledge graph health metrics
-```
+These rules determine quality. Violating them produces a noisy, useless knowledge graph.
 
-## Reading Knowledge
+**1. One note = one independent idea.** If a note contains multiple claims, split it before writing. Each note must be understandable without its source.
 
-```bash
-# Search
-lens search "agent architecture" --json
-# → {query, count, results: [{id, type, text, role, qualifier, scope}]}
+**2. You are a thinker, not an extractor.** "The article says X" is forbidden. "X contradicts what we know about Y, which suggests Z" is valuable. If your note can only be described as "from article X," reject or rewrite it as a concept-oriented claim.
 
-# Read full object
-lens show note_01ABC --json
-# → full object with all fields, evidence, metadata
+**3. Search BEFORE you write.** Always `lens search` for existing knowledge before creating notes. A note that links to existing knowledge is worth 10x more than an isolated one.
 
-# Graph health
-lens status --json
-# → {total_notes, connectivity: {orphan_count, ...}, link_types, ...}
-```
+**4. Rewrite in your own words.** Don't copy quotes. Reformulate the idea. Use `voice: "synthesized"` for your own thinking, `"extracted"` only for verbatim evidence inside the `evidence` array.
 
-## Writing Knowledge
+**5. Contradictions and tensions are the most valuable.** `contradicts` and `refines` create more knowledge value than `supports`. Actively look for tensions between new ideas and existing notes.
 
-Pipe JSON to `lens write --json`. The `type` field determines the operation.
+**6. Update before create.** If a new article provides evidence for an existing claim, use `type: "update"` to add evidence or strengthen qualifier. If understanding evolves, update the existing note. Only create a new note for a genuinely new idea.
 
-### Create a note
+**7. Every link needs a reason.** Don't link because topics are vaguely related. Automatic backlinks and loose associations are harmful noise. Ask: "why does this note SPECIFICALLY support/contradict/refine that one?"
 
-```bash
-echo '{
-  "type": "note",
-  "text": "High quality software is cheaper in the medium term",
-  "role": "claim",
-  "qualifier": "certain",
-  "scope": "big_picture",
-  "source": "src_01ABC",
-  "supports": ["note_01DEF"],
-  "evidence": [{"text": "the track overtakes within weeks", "source": "src_01ABC"}]
-}' | lens write --json
-# → {"id": "note_01XYZ", "type": "note", "action": "created"}
-```
+**8. Zero new notes is acceptable.** An article that only strengthens existing knowledge should produce updates, not new notes. The number of notes follows from thinking, not from a target.
 
-Note fields:
-- `text` (required): the thought itself
-- `role`: claim / frame / question / observation / connection / structure_note
-- `qualifier`: certain / likely / presumably / tentative
-- `scope`: big_picture / detail
-- `voice`: extracted / restated / synthesized
-- `source`: source ID this note comes from
-- `supports`, `contradicts`, `refines`: arrays of note IDs
-- `evidence`: array of `{text, source, locator}`
-- `sees`, `ignores`: for frame notes
-- `question_status`: open / tentative_answer / resolved
-- `bridges`: array of note IDs (for connection notes)
+**9. Structure notes are sparse and post-hoc.** Don't create `structure_note` entries for every topic. They are index entry points created AFTER a cluster of linked notes has formed naturally. Never create one per article.
 
-### Create a source
-
-```bash
-echo '{"type": "source", "title": "Article Title", "url": "https://...", "source_type": "web_article"}' | lens write --json
-```
-
-### Add a link
-
-```bash
-echo '{"type": "link", "from": "note_01A", "rel": "supports", "to": "note_01B"}' | lens write --json
-```
-
-Contradicts links are automatically bidirectional.
-
-### Update a note
-
-```bash
-echo '{"type": "update", "id": "note_01A", "set": {"qualifier": "certain"}, "add": {"supports": ["note_01B"]}}' | lens write --json
-```
-
-### Batch write
-
-```bash
-echo '[
-  {"type": "source", "title": "Article X", "url": "https://..."},
-  {"type": "note", "text": "Key insight", "role": "claim", "source": "$0"},
-  {"type": "note", "text": "Supports first note", "supports": ["$1"], "source": "$0"}
-]' | lens write --json
-```
-
-Use `$0`, `$1` to reference earlier items in the batch by index.
-
-## Fetching Web Content
-
-```bash
-# Extract only
-lens fetch https://example.com/article --json
-# → {title, author, url, word_count, markdown}
-
-# Extract + save as Source
-lens fetch https://example.com/article --save --json
-# → {title, author, url, word_count, markdown, source_id}
-```
-
-## How to Think (Read This First)
-
-lens follows the Zettelkasten method. These principles determine the quality of everything you store:
-
-**1. You are a thinker, not an extractor.** Don't summarize what the article says. Write YOUR thoughts triggered by the reading. "The article says X" is useless. "X contradicts what we know about Y, which suggests Z" is valuable.
-
-**2. Search BEFORE you write.** Always search lens for existing knowledge on the topic before creating notes. The value is in connections — a note that links to existing knowledge is worth 10x more than an isolated one.
-
-**3. Write concept-oriented notes, not source-oriented notes.** Bad: "Notes from Martin Fowler's article." Good: "High internal quality has negative cost in software development." The note should stand alone as a thought, independent of which article triggered it.
-
-**4. Rewrite in your own words.** Don't copy quotes. Reformulate the idea. This forced rewriting is what makes knowledge stick. Use `voice: "synthesized"` for your own thinking, `"extracted"` only for verbatim evidence quotes.
-
-**5. Contradictions and tensions are the most valuable links.** `contradicts` and `refines` create more knowledge value than `supports`. When you find a tension between a new idea and an existing note, that IS the insight.
-
-**6. Update existing notes, don't just create new ones.** If a new article provides evidence for an existing claim, update it (`type: "update"`, add evidence, strengthen qualifier). If understanding evolves, update the note rather than creating a duplicate.
-
-**7. Every link needs a reason.** Don't link just because topics are vaguely related. Ask: "why does this note specifically support/contradict/refine that one?" If you can't articulate it, don't link.
-
-**8. Fewer, better notes.** An article that mostly covers known ground might produce 1 new note and 3 updates to existing notes. A breakthrough article might produce 5 genuine insights. The number follows from thinking, not from a target.
-
-## Workflows
-
-### Compile an article into knowledge
-
-1. `lens fetch <url> --save --json` — get source_id + markdown
-2. **Read the article.** Identify 2-3 key themes.
-3. `lens search "theme keywords" --json` — find what the knowledge graph already knows
-4. For relevant results: `lens show <id> --json` — read full detail + links
-5. **Think**: What's genuinely new? What contradicts existing notes? What strengthens them?
-6. For existing notes that get new evidence: use `type: "update"` to add evidence or strengthen qualifier
-7. For genuinely new insights: create notes with links to existing ones
-```bash
-echo '[
-  {"type":"update", "id":"note_01EXISTING", "add":{"evidence":[{"text":"new supporting quote","source":"src_NEW"}]}},
-  {"type":"note", "text":"Your genuine new insight", "role":"claim", "qualifier":"likely", "source":"src_NEW", "contradicts":["note_01OTHER"]}
-]' | lens write --json
-```
-
-### Answer a question from knowledge
-
-1. `lens search "<query>" --json` — find relevant notes
-2. `lens show <id> --json` for top results — read full detail + links
-3. Synthesize the answer from notes. Cite note IDs as evidence.
-4. Surface contradictions: if the knowledge graph has conflicting notes, present both sides.
-5. Identify gaps: if the query touches areas with no notes, say so explicitly.
-
-### Curate orphan notes
-
-1. `lens status --json` — check `connectivity.orphan_count`
-2. For orphan notes: `lens show <id> --json` — read the note
-3. `lens search "related keywords" --json` — find potential connections
-4. Only add links you can justify: `echo '{"type":"link","from":"orphan_id","rel":"supports","to":"target_id"}' | lens write --json`
+**10. Merge, evolve, supersede.** When two notes say essentially the same thing, merge them. When confidence changes, evolve the qualifier. When a note is replaced by better understanding, supersede it (`status: "superseded"`). Notes have lifecycles, not just births.
 
 ## When to Use lens
 
@@ -181,30 +46,79 @@ echo '[
 
 - An insight that connects to ideas already in the knowledge graph
 - A principle you'd apply in a different context in the future
-- A tension or contradiction between two ideas that's unresolved
+- A tension between two ideas that's unresolved
 - A genuinely new perspective that none of the existing notes express
 
-**The test**: would this note surprise and help you if you found it 3 months from now while working on something unrelated? If not, don't store it.
+**The test**: would this note surprise you 3 months from now while working on something unrelated? If not, don't store it.
 
 ## What is NOT Worth Storing
 
 - Summaries of what the article says (store your thinking, not its content)
 - Debug solutions and tool-specific workarounds (they expire)
-- Common knowledge (if everyone already knows it, it won't surprise you)
-- Process logs (what you did today, steps taken)
-- Facts without interpretation (store the insight, not the data)
+- Common knowledge (if everyone knows it, it won't surprise you)
+- Process logs (what you did today)
+- Facts without interpretation
+- A note that cannot stand without naming its source article
 
-## Error Format
+## Workflows
 
-All errors return: `{"error": {"code": "...", "message": "...", "command": "..."}}`
+### Compile an article
 
-The message explains what went wrong and how to fix it.
+1. `lens fetch <url> --save --json` → get source_id + markdown
+2. Read the article. Rewrite candidate ideas in your own words.
+3. `lens search "concept keywords" --json` → find what lens already knows
+4. For relevant results: `lens show <id> --json` → read detail + links
+5. Test each candidate idea against existing notes:
+   - Strengthens an existing note? → `type: "update"`, add evidence
+   - Contradicts an existing note? → create new note with `contradicts` link
+   - Genuinely new? → create new note with links to related existing notes
+   - Already covered? → skip
+6. 0 new notes is a valid outcome.
 
-## Tips
+### Answer a question from knowledge
 
-- Always use `--json` when consuming output
-- Note IDs: `note_01ABC...`, source IDs: `src_01ABC...`
-- Search supports Chinese, Japanese, Korean text natively
-- Contradicts links are always bidirectional (lens enforces this)
-- Batch `$N` references resolve to the ID of the Nth item in the same batch
-- `lens status` shows graph quality — high orphan rate means notes need linking
+1. `lens search "<query>" --json` → find relevant notes
+2. `lens show <id> --json` for top results → full detail + links
+3. Synthesize. Cite note IDs as evidence.
+4. Surface contradictions: present both sides if the graph has conflicting notes.
+5. Identify gaps: say explicitly if the query touches areas with no notes.
+
+### Curate orphan notes
+
+1. `lens status --json` → check `connectivity.orphan_count`
+2. `lens show <orphan_id> --json` → read the note
+3. `lens search "related keywords" --json` → find connections
+4. Only add links you can justify. No link is better than a weak link.
+
+## Command Reference
+
+### 5 Core Commands
+
+```bash
+lens search "<query>" --json       # Find notes (multilingual)
+lens show <id> --json              # Read one object with detail + links
+echo '<json>' | lens write --json  # Write anything (see below)
+lens fetch <url> [--save] --json   # Extract web content
+lens status --json                 # Stats + graph health
+```
+
+### Write API
+
+Pipe JSON to `lens write --json`. The `type` field routes the operation:
+
+```json
+{"type": "note", "text": "...", "role": "claim", "qualifier": "likely", "supports": ["note_ID"]}
+{"type": "source", "title": "...", "url": "...", "source_type": "web_article"}
+{"type": "link", "from": "note_A", "rel": "supports", "to": "note_B"}
+{"type": "update", "id": "note_A", "set": {"qualifier": "certain"}, "add": {"evidence": [...]}}
+{"type": "delete", "id": "note_A"}
+[{...}, {...}]  // batch, use $0/$1 to reference earlier items
+```
+
+Note fields: `text` (required), `role` (claim/frame/question/observation/connection/structure_note), `qualifier` (certain/likely/presumably/tentative), `scope` (big_picture/detail), `voice` (extracted/restated/synthesized), `source`, `supports[]`, `contradicts[]`, `refines[]`, `evidence[]`, `sees`, `ignores`, `question_status`, `bridges[]`.
+
+Contradicts links are automatically bidirectional.
+
+### Error Format
+
+`{"error": {"code": "...", "message": "...", "command": "..."}}`
