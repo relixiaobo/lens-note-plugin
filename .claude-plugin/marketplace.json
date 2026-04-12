@@ -11,7 +11,7 @@
     {
       "name": "lens",
       "description": "Store, query, and link knowledge in a persistent knowledge graph",
-      "source": ".",
+      "source": "./plugin",
       "category": "productivity",
       "version": "0.3.1"
     }
