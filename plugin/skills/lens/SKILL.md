@@ -118,34 +118,58 @@ lens fetch https://example.com/article --save --json
 # → {title, author, url, word_count, markdown, source_id}
 ```
 
+## How to Think (Read This First)
+
+lens follows the Zettelkasten method. These principles determine the quality of everything you store:
+
+**1. You are a thinker, not an extractor.** Don't summarize what the article says. Write YOUR thoughts triggered by the reading. "The article says X" is useless. "X contradicts what we know about Y, which suggests Z" is valuable.
+
+**2. Search BEFORE you write.** Always search lens for existing knowledge on the topic before creating notes. The value is in connections — a note that links to existing knowledge is worth 10x more than an isolated one.
+
+**3. Write concept-oriented notes, not source-oriented notes.** Bad: "Notes from Martin Fowler's article." Good: "High internal quality has negative cost in software development." The note should stand alone as a thought, independent of which article triggered it.
+
+**4. Rewrite in your own words.** Don't copy quotes. Reformulate the idea. This forced rewriting is what makes knowledge stick. Use `voice: "synthesized"` for your own thinking, `"extracted"` only for verbatim evidence quotes.
+
+**5. Contradictions and tensions are the most valuable links.** `contradicts` and `refines` create more knowledge value than `supports`. When you find a tension between a new idea and an existing note, that IS the insight.
+
+**6. Update existing notes, don't just create new ones.** If a new article provides evidence for an existing claim, update it (`type: "update"`, add evidence, strengthen qualifier). If understanding evolves, update the note rather than creating a duplicate.
+
+**7. Every link needs a reason.** Don't link just because topics are vaguely related. Ask: "why does this note specifically support/contradict/refine that one?" If you can't articulate it, don't link.
+
+**8. Fewer, better notes.** An article that mostly covers known ground might produce 1 new note and 3 updates to existing notes. A breakthrough article might produce 5 genuine insights. The number follows from thinking, not from a target.
+
 ## Workflows
 
 ### Compile an article into knowledge
 
 1. `lens fetch <url> --save --json` — get source_id + markdown
-2. `lens search "key topics" --json` — find existing related notes
-3. For top results: `lens show <id> --json` — read full detail + links
-4. Think: what's genuinely new? What supports or contradicts existing notes?
-5. Batch write your notes:
+2. **Read the article.** Identify 2-3 key themes.
+3. `lens search "theme keywords" --json` — find what the knowledge graph already knows
+4. For relevant results: `lens show <id> --json` — read full detail + links
+5. **Think**: What's genuinely new? What contradicts existing notes? What strengthens them?
+6. For existing notes that get new evidence: use `type: "update"` to add evidence or strengthen qualifier
+7. For genuinely new insights: create notes with links to existing ones
 ```bash
 echo '[
-  {"type":"note", "text":"your insight", "role":"claim", "qualifier":"likely", "source":"src_ID", "supports":["note_ID"]},
-  {"type":"note", "text":"another thought", "role":"observation", "source":"src_ID"}
+  {"type":"update", "id":"note_01EXISTING", "add":{"evidence":[{"text":"new supporting quote","source":"src_NEW"}]}},
+  {"type":"note", "text":"Your genuine new insight", "role":"claim", "qualifier":"likely", "source":"src_NEW", "contradicts":["note_01OTHER"]}
 ]' | lens write --json
 ```
 
 ### Answer a question from knowledge
 
 1. `lens search "<query>" --json` — find relevant notes
-2. `lens show <id> --json` for top results — get full detail
-3. Synthesize the answer from notes. Cite note IDs (e.g. "According to note_01ABC...").
+2. `lens show <id> --json` for top results — read full detail + links
+3. Synthesize the answer from notes. Cite note IDs as evidence.
+4. Surface contradictions: if the knowledge graph has conflicting notes, present both sides.
+5. Identify gaps: if the query touches areas with no notes, say so explicitly.
 
 ### Curate orphan notes
 
 1. `lens status --json` — check `connectivity.orphan_count`
 2. For orphan notes: `lens show <id> --json` — read the note
 3. `lens search "related keywords" --json` — find potential connections
-4. `echo '{"type":"link","from":"orphan_id","rel":"supports","to":"target_id"}' | lens write --json`
+4. Only add links you can justify: `echo '{"type":"link","from":"orphan_id","rel":"supports","to":"target_id"}' | lens write --json`
 
 ## When to Use lens
 
@@ -155,21 +179,20 @@ echo '[
 
 ## What IS Worth Storing
 
+- An insight that connects to ideas already in the knowledge graph
 - A principle you'd apply in a different context in the future
-- An insight that connects to ideas you already have in lens
 - A tension or contradiction between two ideas that's unresolved
-- A genuinely new perspective that changes how you think about something
-- Something that surprised you — if you'd encounter this note months later, would it spark a useful connection?
+- A genuinely new perspective that none of the existing notes express
+
+**The test**: would this note surprise and help you if you found it 3 months from now while working on something unrelated? If not, don't store it.
 
 ## What is NOT Worth Storing
 
-- Debug solutions and tool-specific workarounds (they expire with the version)
-- Common knowledge that any developer already knows
+- Summaries of what the article says (store your thinking, not its content)
+- Debug solutions and tool-specific workarounds (they expire)
+- Common knowledge (if everyone already knows it, it won't surprise you)
 - Process logs (what you did today, steps taken)
 - Facts without interpretation (store the insight, not the data)
-- Things that belong in code comments, commit messages, or documentation
-
-**The test**: would this note surprise and help you if you found it 3 months from now while working on something unrelated? If not, don't store it.
 
 ## Error Format
 
