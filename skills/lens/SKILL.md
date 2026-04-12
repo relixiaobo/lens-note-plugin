@@ -22,7 +22,7 @@ lens search "<query>" --json       # Find notes (multilingual, CJK-aware)
 lens show <id> --json              # Read one object with full detail + links
 echo '<json>' | lens write --json  # Write anything: note, source, link, batch
 lens fetch <url> [--save] --json   # Extract web content as clean markdown
-lens health --json                 # Knowledge graph health metrics
+lens status --json                 # Knowledge graph health metrics
 ```
 
 ## Reading Knowledge
@@ -37,7 +37,7 @@ lens show note_01ABC --json
 # → full object with all fields, evidence, metadata
 
 # Graph health
-lens health --json
+lens status --json
 # → {total_notes, connectivity: {orphan_count, ...}, link_types, ...}
 ```
 
@@ -142,7 +142,7 @@ echo '[
 
 ### Curate orphan notes
 
-1. `lens health --json` — check `connectivity.orphan_count`
+1. `lens status --json` — check `connectivity.orphan_count`
 2. For orphan notes: `lens show <id> --json` — read the note
 3. `lens search "related keywords" --json` — find potential connections
 4. `echo '{"type":"link","from":"orphan_id","rel":"supports","to":"target_id"}' | lens write --json`
@@ -168,4 +168,4 @@ The message explains what went wrong and how to fix it.
 - Search supports Chinese, Japanese, Korean text natively
 - Contradicts links are always bidirectional (lens enforces this)
 - Batch `$N` references resolve to the ID of the Nth item in the same batch
-- `lens health` shows graph quality — high orphan rate means notes need linking
+- `lens status` shows graph quality — high orphan rate means notes need linking
