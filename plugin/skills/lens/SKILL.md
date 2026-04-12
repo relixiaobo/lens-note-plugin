@@ -151,9 +151,25 @@ echo '[
 
 - User references prior research ("what do I know about...", "my notes on...")
 - User says "check lens", "ask lens", or "save to lens"
-- You discover something relevant to existing notes
 - User asks to compile, ingest, or save an article
-- User wants to build persistent knowledge across sessions
+
+## What IS Worth Storing
+
+- A principle you'd apply in a different context in the future
+- An insight that connects to ideas you already have in lens
+- A tension or contradiction between two ideas that's unresolved
+- A genuinely new perspective that changes how you think about something
+- Something that surprised you — if you'd encounter this note months later, would it spark a useful connection?
+
+## What is NOT Worth Storing
+
+- Debug solutions and tool-specific workarounds (they expire with the version)
+- Common knowledge that any developer already knows
+- Process logs (what you did today, steps taken)
+- Facts without interpretation (store the insight, not the data)
+- Things that belong in code comments, commit messages, or documentation
+
+**The test**: would this note surprise and help you if you found it 3 months from now while working on something unrelated? If not, don't store it.
 
 ## Error Format
 
