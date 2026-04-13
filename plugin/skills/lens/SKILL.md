@@ -266,31 +266,81 @@ Flags: `--since 7d` (time filter: `Nd`/`Nw`/`Nm`/`Ny`), `--orphans` (notes only)
 
 ### context
 
-Assembles a full context pack for a query — includes note bodies (unlike search which only matches):
+Assembles a context pack with full note bodies. Use `context` when you need to **synthesize** across multiple notes (e.g., answering "what do I know about X"). Use `search` when you just need to **find** matching notes by title/keyword.
 
 ```json
 {"query": "...", "timestamp": "...", "total_results": 5,
- "notes": [{"id": "note_01A", "title": "...", "source": "src_01B", "links": [...], "body": "full body..."}]}
+ "notes": [{"id": "note_01A", "title": "...", "source": "src_01B", "forward_links": [...], "body": "full body..."}]}
 ```
 
-Always returns JSON. Use when you need full note bodies for synthesis, not just titles.
+Always returns JSON (no `--json` flag needed). Only includes notes, not sources or tasks.
 
 ### digest
 
-Groups recent notes into tensions (contradictions), connected (linked), and seeds (unlinked):
+Groups recent notes by link type. Categorization: has `contradicts` link → **tensions**, has other links → **connected**, no links → **seeds**.
 
 ```json
 {"period": "7d", "total": 12,
- "tensions": [{"id": "note_01A", "title": "...", "links": [{"rel": "contradicts", "to": "note_01B"}]}],
- "connected": [{"id": "note_01C", "title": "...", "links": [...]}],
+ "tensions": [{"id": "note_01A", "title": "...", "forward_links": [{"rel": "contradicts", "to": "note_01B"}]}],
+ "connected": [{"id": "note_01C", "title": "...", "forward_links": [...]}],
  "seeds": [{"id": "note_01D", "title": "..."}]}
 ```
 
-Accepts period (`week`/`month`/`year`) or `--days N` (default: 1 day). Useful for reviewing recent work and spotting contradictions.
+Accepts `week`/`month`/`year` or `--days N` (default: 1 day). Use to review recent work and spot contradictions worth exploring.
+
+### status
+
+```json
+{"path": "/Users/.../.lens", "notes": 903, "sources": 99,
+ "tasks": {"open": 2, "done": 0, "total": 2}, "total": 1004,
+ "connectivity": {"orphan_count": 4, "orphan_rate": 0.4, "total_links": 2874, "cross_source_pct": 0},
+ "link_types": {"related": 2457, "supports": 279, "refines": 136, "contradicts": 2}}
+```
+
+### fetch
+
+Extracts web content as clean markdown. With `--save`, also creates a source object.
+
+```json
+{"title": "Article Title", "author": "Author Name", "url": "https://...",
+ "word_count": 2718, "markdown": "# Article...", "source_id": "src_01A (only with --save)"}
+```
+
+### tasks
+
+Shortcut for listing tasks. `tasks` = open only, `tasks --all` = all, `tasks --done` = done only.
+
+```json
+{"type": "tasks", "count": 2, "items": [{"id": "task_01A", "title": "...", "status": "open"}]}
+```
+
+### note (shortcut)
+
+`lens note "title"` is equivalent to `lens write '{"type":"note","title":"..."}'`. Creates a note with no body or links — use for quick capture.
+
+### ingest (shortcut)
+
+`lens ingest <url>` is equivalent to `lens fetch <url> --save`. Fetches web content and saves as a source.
+
+### feed subcommands
+
+```bash
+lens feed add <url> --json        # Subscribe (auto-discovers RSS from HTML)
+lens feed list --json              # List subscriptions
+lens feed check [--dry-run] --json # Check for new articles (--dry-run: preview only)
+lens feed import <opml-file> --json # Import OPML subscriptions
+lens feed remove <id|url> --json  # Unsubscribe
+```
+
+`feed add` output: `{"id": "...", "url": "...", "title": "..."}}`
+`feed list` output: `{"count": N, "feeds": [{"id": "...", "url": "...", "title": "...", "last_checked_at": "..."}]}`
+`feed check` output: `{"new_articles": N, "articles": [{"title": "...", "url": "...", "feedTitle": "..."}]}`
+`feed import` output: `{"imported": N, "skipped": N, "feeds": [...]}`
+`feed remove` output: `{"removed": "feed_id", "url": "..."}`
 
 ### rebuild-index
 
-Rebuilds SQLite cache from markdown files. Use when the index is corrupted or after manual file edits:
+Rebuilds SQLite cache from markdown files. Use when the index is corrupted or after manual file edits outside lens:
 
 ```json
 {"indexed": 350, "elapsed_ms": 120}
@@ -364,6 +414,34 @@ This does case-insensitive exact title matching first, then falls back to FTS5. 
 **Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter.
 
 For full field reference, read [references/note-fields.md](references/note-fields.md).
+
+## Combining Commands
+
+Common multi-step workflows:
+
+**Compile an article** (Capture → Collide → Crystallize):
+1. `lens fetch <url> --save --json` → get source_id
+2. `lens search "key concepts" --json` → find related notes
+3. `lens show <id> --json` → read related notes, follow forward_links
+4. `lens write --file batch.json --json` → create notes with links
+
+**Explore a topic** (Index → Walk):
+1. `lens index "topic" --json` → get entry point note
+2. `lens show <entry_id> --json` → read it, see forward_links
+3. `lens links <id> --json` → see all connections (forward + backward)
+4. Repeat show → links for each interesting connection
+
+**Dedup after batch import**:
+1. `lens similar --all --threshold 0.8 --json` → find duplicate groups
+2. For each group: `lens show <id> --json` → compare content
+3. `lens write '{"type":"update","id":"keep_id","body":"merged"}' --json` → merge
+4. `lens write '{"type":"delete","id":"dup_id"}' --json` → remove duplicate
+
+**Review recent work**:
+1. `lens digest week --json` → see tensions/connected/seeds
+2. For tensions: `lens show <id> --json` → investigate contradictions
+3. For seeds: `lens search "keywords" --json` → find connections
+4. `lens write '{"type":"link",...}' --json` → connect orphans
 
 ## Common Pitfalls
 
