@@ -1,12 +1,12 @@
 {
   "name": "lens",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Knowledge graph for agents. Store, query, and link structured knowledge across sessions.",
   "author": {
     "name": "relixiaobo",
     "url": "https://github.com/relixiaobo"
   },
-  "homepage": "https://github.com/relixiaobo/lens-note",
+  "homepage": "https://github.com/relixiaobo/lens-note-plugin",
   "repository": "https://github.com/relixiaobo/lens-note-plugin",
   "license": "MIT",
   "keywords": ["knowledge", "zettelkasten", "notes", "graph", "memory", "agent"],

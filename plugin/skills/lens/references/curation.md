@@ -55,6 +55,16 @@ printf '%s' '{"command":"write","input":{"type":"link","from":"orphan_id","rel":
 
 **No link is better than a weak link.** If you can't articulate why two notes are connected, don't link them. The orphan is a seed — it will find its connections when related knowledge arrives in the future.
 
+### Remove incorrect links
+
+If a link was added by mistake or no longer makes sense:
+
+```bash
+printf '%s' '{"command":"write","input":{"type":"unlink","from":"note_A","rel":"supports","to":"note_B"}}' | lens --stdin
+```
+
+`unlink` requires all three fields: `from`, `to`, `rel`. For `contradicts` links, the reverse direction is also removed automatically.
+
 ## Merge and Supersede
 
 **Merge**: when two notes say essentially the same thing, keep the better one. Update it with any unique content from the other. Delete the duplicate.

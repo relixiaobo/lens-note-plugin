@@ -176,6 +176,7 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 {"type": "source", "title": "...", "url": "...", "source_type": "web_article"}
 {"type": "task", "title": "...", "status": "open"}
 {"type": "link", "from": "note_A", "rel": "supports", "to": "note_B", "reason": "..."}
+{"type": "unlink", "from": "note_A", "rel": "supports", "to": "note_B"}
 {"type": "update", "id": "note_A", "set": {"title": "..."}, "add": {"links": [...]}, "body": "..."}
 {"type": "delete", "id": "note_A"}
 [{...}, {...}]  // batch — $0/$1 reference earlier items' IDs
