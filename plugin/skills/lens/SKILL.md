@@ -29,6 +29,7 @@ When lens is relevant, identify the mode before acting:
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
 | "who is X" / "enrich" / "补充背景" | **Enrich** | Build entity card (person/work/concept) with your knowledge. |
 | "check feeds" / "what's new" / RSS processing | **Feed** | Read [references/feeds.md](references/feeds.md) first. |
+| "where do I start with X" / navigation | **Index** | Use keyword index as entry point, then follow links. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
 
 ## Commands
@@ -58,6 +59,12 @@ lens similar --all --json                 # Scan all notes, group duplicates
 lens digest [week|month|year] --json      # Recent insights grouped by type
 lens digest --days 3 --json               # Last N days
 lens status --json                        # Stats + graph health
+
+# Index (Schlagwortregister)
+lens index --json                         # List all keyword entry points
+lens index "<keyword>" --json             # Show entries for a keyword
+lens index add "<keyword>" <id> --json    # Register entry point (max 3 per keyword)
+lens index remove "<keyword>" [id] --json # Remove keyword or single entry
 
 # System
 lens rebuild-index --json                 # Rebuild SQLite cache from markdown files
@@ -289,6 +296,26 @@ Rebuilds SQLite cache from markdown files. Use when the index is corrupted or af
 ```json
 {"indexed": 350, "elapsed_ms": 120}
 ```
+
+### index (Schlagwortregister)
+
+A sparse keyword index — curated entry points into the knowledge graph. Each keyword maps to 1-3 note IDs (the best starting points for a topic). From the entry point, follow links to explore.
+
+```bash
+lens index --json                              # list all keywords
+lens index "Agent设计" --json                   # show entries for keyword
+lens index add "Agent设计" note_01ABC --json    # register entry
+lens index remove "Agent设计" --json            # remove keyword
+lens index remove "Agent设计" note_01ABC --json # remove single entry
+```
+
+List output: `{"count": N, "keywords": {"kw": [{"id": "...", "title": "..."}]}}`
+Show output: `{"keyword": "...", "entries": [{"id": "...", "title": "..."}]}`
+Add output: `{"action": "added", "keyword": "...", "id": "...", "title": "...", "entry_count": N}`
+
+**When to create an entry**: After you notice a cluster of 5+ interconnected notes on a topic — pick the best "starting point" note. The index should be extremely sparse (10-20 keywords for hundreds of notes).
+
+**Usage in Compile/Query mode**: Before searching, check `lens index --json` for relevant keywords. If found, start from that entry point instead of free search — it leads to the best-connected part of the graph.
 
 ## Write API Reference
 
