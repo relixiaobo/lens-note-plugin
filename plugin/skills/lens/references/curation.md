@@ -35,32 +35,32 @@ lens search "keywords from the note" --json
 ### 4. Add the link (only if justified)
 
 ```bash
-echo '{"type":"link","from":"orphan_id","rel":"supports","to":"target_id"}' | lens write --json
+printf '%s' '{"command":"write","input":{"type":"link","from":"orphan_id","rel":"supports","to":"target_id"}}' | lens --stdin
 ```
 
 **No link is better than a weak link.** If you can't articulate why two notes are connected, don't link them. The orphan is a seed — it will find its connections when related knowledge arrives in the future.
 
 ## Merge and Supersede
 
-**Merge**: when two notes say essentially the same thing, keep the better one. Update it with any unique evidence from the other. Delete the duplicate.
+**Merge**: when two notes say essentially the same thing, keep the better one. Update it with any unique content from the other. Delete the duplicate.
 
 ```bash
-echo '{"type":"update","id":"note_KEEP","add":{"evidence":[...]}}' | lens write --json
-echo '{"type":"delete","id":"note_DUPLICATE"}' | lens write --json
+printf '%s' '{"command":"write","input":{"type":"update","id":"note_KEEP","body":"merged body..."}}' | lens --stdin
+printf '%s' '{"command":"write","input":{"type":"delete","id":"note_DUPLICATE"}}' | lens --stdin
 ```
 
-**Supersede**: when understanding has evolved and an old note is no longer accurate. Don't delete — mark as superseded so the history is preserved.
+**Supersede**: when understanding has evolved and an old note is no longer accurate. Don't delete — update the body to note it's superseded, and link to the newer note.
 
 ```bash
-echo '{"type":"update","id":"note_OLD","set":{"status":"superseded"}}' | lens write --json
+printf '%s' '{"command":"write","input":{"type":"update","id":"note_OLD","body":"**Superseded** by note_NEW.","add":{"links":[{"to":"note_NEW","rel":"related","reason":"superseded by newer understanding"}]}}}' | lens --stdin
 ```
 
 ## Structure Notes
 
-Structure notes (`role: structure_note`) are sparse index entry points. Rules:
+Structure notes are sparse index entry points. Create them in the body using links. Rules:
 
 - Create them only AFTER a cluster of related notes has formed naturally
-- They point to 3-8 entry-point notes via `entries[]`
+- Link to 3-8 entry-point notes via `links[]`
 - They are navigational aids, not categories
 - Most knowledge graphs need very few structure notes
 - Never create one per article or per topic automatically

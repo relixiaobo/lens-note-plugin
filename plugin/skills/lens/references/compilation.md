@@ -47,10 +47,10 @@ Crystallization takes many forms:
 | What happened | What to do |
 |--------------|------------|
 | Genuinely new insight | Create a note with links to what it collided with |
-| Strengthened existing understanding | Update: add evidence, strengthen qualifier |
+| Strengthened existing understanding | Update: add evidence to body, strengthen the claim |
 | Found a contradiction | Create a note with `contradicts` link. Explain the tension. |
 | Two old notes are actually the same | Merge: update the better one, delete the other |
-| Old understanding superseded | Update: set `status: "superseded"` |
+| Old understanding superseded | Update body to mark as superseded, link to the newer note |
 | Multiple insights emerged | Multiple notes + links between them |
 | Nothing new after collision | Do nothing. This is a valid outcome. |
 
@@ -72,32 +72,19 @@ Each crystal (note) should be:
 
 - **One idea** — If it contains multiple claims, split it. A clear thought holds one thing.
 - **Independent** — Understandable without knowing which article triggered it. "High internal quality has negative cost in software" not "Fowler's article argues that..."
-- **In your words** — Reformulated, not copied. You discover what you think by trying to express it. Use `voice: "synthesized"`.
+- **In your words** — Reformulated, not copied. You discover what you think by trying to express it.
 - **Placed** — Linked to the notes it collided with. The link IS the context. Without it, the note is an orphan — a seed waiting for a future collision.
 
-## What About Scope?
+## What Goes in the Body?
 
-Some crystallizations are big-picture principles. Others are supporting details. Mark them:
-- `scope: "big_picture"` — A core insight that other notes support
-- `scope: "detail"` — A specific point that strengthens a big-picture note
+The body is free-form markdown. Use it for everything beyond the title:
 
-Big-picture notes linked to detail notes form natural hierarchy. No folders needed.
-
-## What About Evidence?
-
-When your crystallization is a claim you're confident about, ground it:
-- `evidence[]` — Verbatim quotes that support the claim
-- `qualifier` — How confident: certain / likely / presumably / tentative
-- Multiple sources confirming the same claim → stronger qualifier
-
-## What About Frames?
-
-Sometimes the insight isn't a claim but a *perspective* — a way of seeing that reveals some things and hides others:
-- `sees` — What this perspective makes visible
-- `ignores` — What it overlooks
-- `assumptions[]` — What it takes for granted
-
-Frames are among the most valuable notes. They don't add facts — they change how you interpret facts.
+- **Evidence**: use blockquotes — `> "quote" — Source`
+- **Confidence**: state in prose — "**likely** based on 2 sources"
+- **Scope**: mention if it's a big-picture principle or supporting detail
+- **Perspective/frames**: describe what this view sees and what it ignores. Frames are among the most valuable notes — they don't add facts, they change how you interpret facts.
+- **Questions**: pose open questions naturally
+- **Inline references**: mention other note IDs in prose
 
 ## Process for Deep Compilation (Articles)
 
@@ -108,8 +95,8 @@ When the spark is a full article:
 3. Identify your strongest reactions — what surprised you, what you disagreed with, what connected to something you know.
 4. For each reaction: carry it into the graph. `lens search` → `lens show` → follow links → wander.
 5. At each collision point: crystallize.
-6. For existing notes that gain new evidence: `lens write '{"type":"update",...}'`
-7. For new insights: `lens write '{"type":"note",...}'`
+6. For existing notes that gain new evidence: write update via `lens --stdin`
+7. For new insights: write note via `lens --stdin`
 8. Zero new notes is acceptable. An article that only strengthens existing knowledge produces updates, not new notes.
 
 ## Anti-Patterns

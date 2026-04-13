@@ -29,17 +29,34 @@ When lens is relevant, identify the mode before acting:
 ```bash
 lens search "<query>" --json       # Find notes
 lens show <id> --json              # Read one object with links
-lens write '<json>' --json         # Write anything (arg or stdin)
+lens write --file <path> --json    # Write anything (from JSON file)
 lens fetch <url> [--save] --json   # Extract web content
 lens status --json                 # Stats + graph health
 ```
+
+### --stdin mode (recommended for complex content)
+
+All commands support `--stdin` — pass a JSON request envelope via stdin. Content bypasses the shell entirely, so Chinese text, quotes, and newlines are always safe:
+
+```bash
+# Write (content goes in "input", never through shell)
+printf '%s' '{"command":"write","input":{"type":"note","title":"标题","body":"正文..."}}' | lens --stdin
+
+# Search
+printf '%s' '{"command":"search","positional":["query text"]}' | lens --stdin
+
+# Fetch with flags
+printf '%s' '{"command":"fetch","positional":["https://..."],"flags":{"save":true}}' | lens --stdin
+```
+
+Envelope format: `{"command":"...", "positional":[], "flags":{}, "input":{}}`
 
 ## Mode: Capture
 
 For quick thoughts, observations, ideas. No overhead.
 
 ```bash
-echo '{"type":"note","title":"Simple tools composed together beat complex frameworks","role":"observation"}' | lens write --json
+printf '%s' '{"command":"write","input":{"type":"note","title":"Simple tools composed together beat complex frameworks"}}' | lens --stdin
 ```
 
 One rule: **one idea per note.** If the thought has multiple claims, split into separate notes.
@@ -62,14 +79,14 @@ Follow links — the most valuable discoveries come from traversing connections 
 When new information changes existing knowledge:
 
 ```bash
-# Add evidence to existing note
-echo '{"type":"update","id":"note_01ABC","add":{"evidence":[{"title":"new quote","source":"src_01XYZ"}]}}' | lens write --json
+# Update body with new evidence
+printf '%s' '{"command":"write","input":{"type":"update","id":"note_01ABC","body":"Updated body with new evidence:\n\n> new quote — Source\n\n**certain** — confirmed by 3 sources."}}' | lens --stdin
 
-# Strengthen confidence
-echo '{"type":"update","id":"note_01ABC","set":{"qualifier":"certain"}}' | lens write --json
+# Add a link
+printf '%s' '{"command":"write","input":{"type":"link","from":"note_01ABC","rel":"supports","to":"note_01DEF","reason":"both argue for the same principle"}}' | lens --stdin
 
 # Record contradiction
-echo '{"type":"link","from":"note_NEW","rel":"contradicts","to":"note_01ABC"}' | lens write --json
+printf '%s' '{"command":"write","input":{"type":"link","from":"note_NEW","rel":"contradicts","to":"note_01ABC","reason":"AI changes the cost equation"}}' | lens --stdin
 ```
 
 ## Mode: Proactive
@@ -98,7 +115,7 @@ Quick summary: check orphan count → find connections for unlinked notes → on
 
 ## Write API Reference
 
-Pipe JSON to `lens write --json`. The `type` field routes:
+Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 
 ```json
 {"type": "note", "title": "...", "links": [{"to": "note_ID", "rel": "supports", "reason": "..."}], "body": "..."}
@@ -109,9 +126,9 @@ Pipe JSON to `lens write --json`. The `type` field routes:
 [{...}, {...}]  // batch, $0/$1 reference earlier items
 ```
 
-Roles: claim, frame, question, observation, connection, structure_note.
-Qualifiers: certain, likely, presumably, tentative.
 Link types: supports, contradicts (auto-bidirectional), refines, related.
+
+**Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter.
 
 For full field reference, read [references/note-fields.md](references/note-fields.md).
 
