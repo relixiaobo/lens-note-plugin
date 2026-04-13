@@ -45,11 +45,18 @@ lens status --json                 # Stats + graph health
 lens tasks [--all|--done] --json    # List tasks (default: open)
 ```
 
-### --stdin mode (required for writes, recommended for all)
+### --stdin vs --file
 
-**Always use `--stdin` for write operations.** It avoids shell escaping issues with quotes, newlines, and Unicode.
+Two ways to pass JSON input to lens. Choose based on content:
 
-All commands support `--stdin` — pass a JSON request envelope via stdin. Content bypasses the shell entirely, so Chinese text, quotes, and newlines are always safe:
+| Method | When to use | Pros |
+|--------|-------------|------|
+| `--stdin` | Agent envelope protocol, simple commands | Single pipe, no temp file |
+| `--file` | Batch writes, content with special chars (Chinese, curly quotes, newlines) | Encoding-safe, debuggable |
+
+**For content with Chinese or special characters**, prefer `--file`: write JSON to a temp file first, then `lens write --file <path> --json`. This avoids shell escaping issues entirely. If generating JSON programmatically, use `python3 -c "import json; json.dump(..., open('/tmp/f.json','w'), ensure_ascii=False)"` for reliable encoding.
+
+**`--stdin` envelope format** — all commands via stdin bypass shell escaping:
 
 ```bash
 # Write (content goes in "input", never through shell)
@@ -171,14 +178,38 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 {"type": "link", "from": "note_A", "rel": "supports", "to": "note_B", "reason": "..."}
 {"type": "update", "id": "note_A", "set": {"title": "..."}, "add": {"links": [...]}, "body": "..."}
 {"type": "delete", "id": "note_A"}
-[{...}, {...}]  // batch, $0/$1 reference earlier items
+[{...}, {...}]  // batch — $0/$1 reference earlier items' IDs
 ```
 
 Link types: supports, contradicts (auto-bidirectional), refines, related.
 
 **Links are idempotent.** Writing the same link twice returns `"action": "unchanged"`. Writing with a different reason returns `"action": "updated"`. No duplicates are ever created.
 
-**Batch writes are partial-success.** If one item in a batch fails, the rest still process. Failed items and their dependents get `"action": "error"` with a message. Output uses `{results:[...]}` format with per-item `index`.
+**Batch writes are partial-success.** If one item in a batch fails, the rest still process. Failed items and their dependents get `"action": "error"` with a message. Output uses `{results:[...]}` format with per-item `index`. Link/unlink results include `from`, `to`, `rel` fields.
+
+### Batch: creating notes with links (recommended pattern)
+
+**Use inline `links[]` on notes** to create notes and links in a single batch. This is simpler than separate `link` items because the note already knows its own ID:
+
+```json
+[
+  {"type": "note", "title": "First insight", "body": "..."},
+  {"type": "note", "title": "Second insight", "body": "...", "links": [{"to": "$0", "rel": "supports", "reason": "builds on first"}]},
+  {"type": "note", "title": "Third insight", "body": "...", "links": [{"to": "$0", "rel": "refines"}, {"to": "$1", "rel": "related"}]}
+]
+```
+
+`$0`, `$1`, `$2` refer to IDs of earlier items in the same batch (by index). Use inline `links[]` for outgoing links from a new note. Use a separate `{"type": "link", "from": "$1", ...}` item only when adding links between two already-existing notes.
+
+### Resolving title → ID before writing
+
+To check if a note already exists by exact title, use `--resolve`:
+
+```bash
+lens search "exact note title" --resolve --json
+```
+
+This does case-insensitive exact title matching first, then falls back to FTS5. Returns `{id, title}` on unique match, or `{error: {code: "ambiguous_match", candidates: [...]}}` if multiple matches. Use this before writing to avoid duplicates.
 
 **Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter.
 
