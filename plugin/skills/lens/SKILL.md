@@ -39,7 +39,7 @@ When lens is relevant, identify the mode before acting:
 lens search "<query>" --json              # Full-text search (Unicode/CJK-aware)
 lens search "<query>" --resolve --json    # Resolve title → ID (exact match first)
 lens show <id> --json                     # Read one object with body + links
-lens links <id> --json                    # Show all relationships (outgoing + incoming)
+lens links <id> --json                    # Show all relationships (forward + backward)
 lens context "<query>" --json             # Assemble full context pack for a topic
 
 # Write
@@ -349,7 +349,7 @@ Link types: supports, contradicts (auto-bidirectional), refines, related.
 ]
 ```
 
-`$0`, `$1`, `$2` refer to IDs of earlier items in the same batch (by index). Use inline `links[]` for outgoing links from a new note. Use a separate `{"type": "link", "from": "$1", ...}` item only when adding links between two already-existing notes.
+`$0`, `$1`, `$2` refer to IDs of earlier items in the same batch (by index). Use inline `links[]` for forward links from a new note. Use a separate `{"type": "link", "from": "$1", ...}` item only when adding links between two already-existing notes.
 
 ### Resolving title → ID before writing
 
