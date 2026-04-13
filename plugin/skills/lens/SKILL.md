@@ -34,16 +34,33 @@ When lens is relevant, identify the mode before acting:
 ## Commands
 
 ```bash
-lens search "<query>" --json       # Find notes
-lens search "<query>" --resolve --json  # Resolve title → ID (exact or disambiguate)
-lens show <id> --json              # Read one object with links + counts
-lens write --file <path> --json    # Write anything (from JSON file)
-lens list notes --orphans --json   # List orphan notes (+ --limit/--offset)
-lens fetch <url> [--save] --json   # Extract web content
-lens similar <id> --json           # Find near-duplicate notes (+ --threshold)
-lens similar --all --json          # Scan all notes, group duplicates
-lens status --json                 # Stats + graph health
-lens tasks [--all|--done] --json    # List tasks (default: open)
+# Search & Read
+lens search "<query>" --json              # Full-text search (Unicode/CJK-aware)
+lens search "<query>" --resolve --json    # Resolve title → ID (exact match first)
+lens show <id> --json                     # Read one object with body + links
+lens links <id> --json                    # Show all relationships (outgoing + incoming)
+lens context "<query>" --json             # Assemble full context pack for a topic
+
+# Write
+lens write --file <path> --json           # Write note/source/task/link/unlink/update/delete/batch
+lens fetch <url> [--save] --json          # Extract web content (--save to create source)
+
+# Browse
+lens list notes --json                    # List all notes
+lens list notes --orphans --json          # List unlinked notes (+ --limit/--offset)
+lens list notes --since 7d --json         # List notes from last 7 days (7d/2w/1m/1y)
+lens list sources --json                  # List all sources
+lens tasks [--all|--done] --json          # List tasks (default: open only)
+
+# Analyze
+lens similar <id> --json                  # Find near-duplicates (+ --threshold)
+lens similar --all --json                 # Scan all notes, group duplicates
+lens digest [week|month|year] --json      # Recent insights grouped by type
+lens digest --days 3 --json               # Last N days
+lens status --json                        # Stats + graph health
+
+# System
+lens rebuild-index --json                 # Rebuild SQLite cache from markdown files
 ```
 
 ### --stdin vs --file
@@ -191,6 +208,87 @@ This happens naturally during the Collide step — you're already searching the 
 Maintain graph health. **Read [references/curation.md](references/curation.md) before proceeding.**
 
 Quick summary: check orphan count → find connections for unlinked notes → only add links you can justify.
+
+## Read API — Output Formats
+
+### search
+
+```json
+{"query": "...", "count": 3, "results": [
+  {"id": "note_01A", "type": "note", "title": "...", "links": [...]},
+  {"id": "src_01B", "type": "source", "title": "...", "source_type": "web_article", "word_count": 2718},
+  {"id": "task_01C", "type": "task", "title": "...", "status": "open"}
+]}
+```
+
+`--resolve` returns `{id, title}` on unique match, or `{error: {code: "ambiguous_match", candidates: [...]}}`.
+
+### show
+
+Returns full object with body, forward/backward links and counts:
+
+```json
+{"id": "note_01A", "type": "note", "title": "...", "body": "...",
+ "forward_link_count": 2, "backward_link_count": 1,
+ "links": {
+   "forward": [{"to": "note_01B", "rel": "supports", "reason": "...", "title": "Target title"}],
+   "backward": [{"from": "note_01C", "rel": "refines", "title": "Source title"}]
+ }}
+```
+
+### links
+
+Shows all relationships for an object (outgoing and incoming):
+
+```json
+{"id": "note_01A",
+ "outgoing": [{"id": "note_01B", "rel": "supports", "type": "note", "label": "Target title"}],
+ "incoming": [{"id": "note_01C", "rel": "refines", "type": "note", "label": "Source title"}]}
+```
+
+Use `links` to explore the graph — follow connections to discover related knowledge.
+
+### list
+
+```json
+{"type": "notes", "count": 42, "items": [{"id": "note_01A", "title": "..."}]}
+```
+
+With `--orphans`: `{"type": "notes", "filter": "orphans", "count": 5, "items": [{"id": "...", "title": "...", "preview": "..."}]}`
+
+Flags: `--since 7d` (time filter: `Nd`/`Nw`/`Nm`/`Ny`), `--orphans` (notes only), `--limit N`, `--offset N` (pagination for orphans).
+
+### context
+
+Assembles a full context pack for a query — includes note bodies (unlike search which only matches):
+
+```json
+{"query": "...", "timestamp": "...", "total_results": 5,
+ "notes": [{"id": "note_01A", "title": "...", "source": "src_01B", "links": [...], "body": "full body..."}]}
+```
+
+Always returns JSON. Use when you need full note bodies for synthesis, not just titles.
+
+### digest
+
+Groups recent notes into tensions (contradictions), connected (linked), and seeds (unlinked):
+
+```json
+{"period": "7d", "total": 12,
+ "tensions": [{"id": "note_01A", "title": "...", "links": [{"rel": "contradicts", "to": "note_01B"}]}],
+ "connected": [{"id": "note_01C", "title": "...", "links": [...]}],
+ "seeds": [{"id": "note_01D", "title": "..."}]}
+```
+
+Accepts period (`week`/`month`/`year`) or `--days N` (default: 1 day). Useful for reviewing recent work and spotting contradictions.
+
+### rebuild-index
+
+Rebuilds SQLite cache from markdown files. Use when the index is corrupted or after manual file edits:
+
+```json
+{"indexed": 350, "elapsed_ms": 120}
+```
 
 ## Write API Reference
 
