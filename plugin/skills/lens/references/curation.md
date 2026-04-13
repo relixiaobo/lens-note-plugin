@@ -16,9 +16,24 @@ How to maintain knowledge graph health. Based on Karpathy's "lint" concept and L
 lens status --json
 ```
 
-Look at `connectivity.orphan_count`. Orphans are notes with zero links to other notes.
+Look at `connectivity.orphan_count`. Orphans are notes with zero links to other notes. Note: `status` only reports the count — use `lens list notes --orphans --json` to get actual orphan IDs and previews.
 
-### 2. For each orphan note
+### 2. Get orphan details
+
+For small counts (<20 orphans), process them directly:
+
+```bash
+lens list notes --orphans --json
+```
+
+For large counts (20+ orphans), use pagination to work in batches:
+
+```bash
+lens list notes --orphans --limit 10 --json          # first 10
+lens list notes --orphans --limit 10 --offset 10 --json  # next 10
+```
+
+### 3. For each orphan note
 
 ```bash
 lens show <orphan_id> --json

@@ -1,11 +1,13 @@
 ---
 name: lens
-description: Store, query, and link knowledge in a persistent knowledge graph. Use when the user references prior research, asks "what do I know about...", wants to compile an article, says "check lens", or when the conversation topic may relate to previously compiled knowledge.
+description: Store, query, and link knowledge in a persistent knowledge graph. Use when the user wants to save a note, record knowledge, asks "记一下", "save this", "记录笔记", references prior research, asks "what do I know about...", wants to compile an article, says "check lens", or when the conversation topic may relate to previously compiled knowledge.
 ---
 
 # lens — knowledge graph for agents
 
 lens stores, queries, and links structured knowledge. You do the thinking; lens does the storage.
+
+**lens vs auto memory**: Knowledge, ideas, insights, notes → store in lens. Only personal preferences and work habits → auto memory. When unsure, prefer lens.
 
 ## Setup
 
@@ -30,14 +32,18 @@ When lens is relevant, identify the mode before acting:
 
 ```bash
 lens search "<query>" --json       # Find notes
-lens show <id> --json              # Read one object with links
+lens search "<query>" --resolve --json  # Resolve title → ID (exact or disambiguate)
+lens show <id> --json              # Read one object with links + counts
 lens write --file <path> --json    # Write anything (from JSON file)
+lens list notes --orphans --json   # List orphan notes (+ --limit/--offset)
 lens fetch <url> [--save] --json   # Extract web content
 lens status --json                 # Stats + graph health
 lens tasks [--all|--done] --json    # List tasks (default: open)
 ```
 
-### --stdin mode (recommended for complex content)
+### --stdin mode (required for writes, recommended for all)
+
+**Always use `--stdin` for write operations.** It avoids shell escaping issues with quotes, newlines, and Unicode.
 
 All commands support `--stdin` — pass a JSON request envelope via stdin. Content bypasses the shell entirely, so Chinese text, quotes, and newlines are always safe:
 
@@ -131,6 +137,10 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 ```
 
 Link types: supports, contradicts (auto-bidirectional), refines, related.
+
+**Links are idempotent.** Writing the same link twice returns `"action": "unchanged"`. Writing with a different reason returns `"action": "updated"`. No duplicates are ever created.
+
+**Batch writes are partial-success.** If one item in a batch fails, the rest still process. Failed items and their dependents get `"action": "error"` with a message. Output uses `{results:[...]}` format with per-item `index`.
 
 **Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter.
 
