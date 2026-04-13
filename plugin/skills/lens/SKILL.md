@@ -81,6 +81,22 @@ printf '%s' '{"command":"write","input":{"type":"note","title":"Simple tools com
 
 One rule: **one idea per note.** If the thought has multiple claims, split into separate notes.
 
+### Dedup check with `lens similar`
+
+After creating a note, check for near-duplicates:
+
+```bash
+lens similar <id> --json                # default threshold: 0.3
+lens similar <id> --threshold 0.5 --json  # stricter matching
+```
+
+- Only works on notes (not sources or tasks)
+- Uses character trigrams + Dice coefficient — language-agnostic (works for CJK, Latin, etc.)
+- `--threshold`: 0–1 float. Default 0.3 catches loose duplicates; 0.5+ for stricter matching
+- Output: `{"id": "...", "count": N, "results": [{"id": "...", "title": "...", "similarity": 0.65}, ...]}`
+
+If a near-duplicate is found (similarity > 0.5), consider merging instead of keeping both: update the existing note with new evidence and delete the new one.
+
 ## Mode: Query
 
 Search → read top results → synthesize.
