@@ -39,7 +39,7 @@ lens status --json                 # Stats + graph health
 For quick thoughts, observations, ideas. No overhead.
 
 ```bash
-echo '{"type":"note","text":"Simple tools composed together beat complex frameworks","role":"observation"}' | lens write --json
+echo '{"type":"note","title":"Simple tools composed together beat complex frameworks","role":"observation"}' | lens write --json
 ```
 
 One rule: **one idea per note.** If the thought has multiple claims, split into separate notes.
@@ -63,7 +63,7 @@ When new information changes existing knowledge:
 
 ```bash
 # Add evidence to existing note
-echo '{"type":"update","id":"note_01ABC","add":{"evidence":[{"text":"new quote","source":"src_01XYZ"}]}}' | lens write --json
+echo '{"type":"update","id":"note_01ABC","add":{"evidence":[{"title":"new quote","source":"src_01XYZ"}]}}' | lens write --json
 
 # Strengthen confidence
 echo '{"type":"update","id":"note_01ABC","set":{"qualifier":"certain"}}' | lens write --json
@@ -101,10 +101,10 @@ Quick summary: check orphan count → find connections for unlinked notes → on
 Pipe JSON to `lens write --json`. The `type` field routes:
 
 ```json
-{"type": "note", "text": "...", "role": "claim", "qualifier": "likely", "supports": ["note_ID"]}
+{"type": "note", "title": "...", "links": [{"to": "note_ID", "rel": "supports", "reason": "..."}], "body": "..."}
 {"type": "source", "title": "...", "url": "...", "source_type": "web_article"}
-{"type": "link", "from": "note_A", "rel": "supports", "to": "note_B"}
-{"type": "update", "id": "note_A", "set": {...}, "add": {...}}
+{"type": "link", "from": "note_A", "rel": "supports", "to": "note_B", "reason": "..."}
+{"type": "update", "id": "note_A", "set": {"title": "..."}, "add": {"links": [...]}, "body": "..."}
 {"type": "delete", "id": "note_A"}
 [{...}, {...}]  // batch, $0/$1 reference earlier items
 ```

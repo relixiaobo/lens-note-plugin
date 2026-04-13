@@ -1,70 +1,61 @@
 # Note Fields Reference
 
-Complete reference for all fields when creating or updating notes.
+## Frontmatter (7 fields)
 
-## Required
+| Field | Required | Description |
+|-------|----------|-------------|
+| `id` | auto | Unique ID (note_ULID) |
+| `type` | auto | Always "note" |
+| `title` | yes | The thought in one sentence |
+| `source` | no | Source ID this note comes from |
+| `links` | no | Array of relationships (see below) |
+| `created_at` | auto | ISO timestamp |
+| `updated_at` | auto | ISO timestamp |
 
-- `text`: The thought itself. Must be an independent idea, understandable without context.
+## Links
 
-## Role (soft hint for display)
+Each link has:
+- `to`: target note ID (required)
+- `rel`: relationship type (required)
+- `reason`: why this link exists (optional but recommended)
 
-| Role | When to use | Key fields |
-|------|------------|------------|
-| `claim` | A substantiated assertion with evidence | evidence[], qualifier |
-| `frame` | A perspective that reveals and hides | sees, ignores, assumptions[] |
-| `question` | An unresolved inquiry | question_status |
-| `observation` | A thought without evidence (default) | — |
-| `connection` | Bridges two existing notes | bridges[] |
-| `structure_note` | Sparse index entry point | entries[] |
+```json
+{"to": "note_01ABC", "rel": "contradicts", "reason": "AI changes the cost equation"}
+```
 
-Role is a display hint, not a constraint. A note can have evidence (claim) AND sees/ignores (frame) simultaneously.
+### Link types
 
-## Claim Fields (Toulmin structure)
+| Rel | Meaning | Auto-bidirectional? |
+|-----|---------|---------------------|
+| `supports` | Strengthens the target note | No |
+| `contradicts` | Conflicts with the target note | Yes |
+| `refines` | More precise version of the target | No |
+| `related` | Loose association (use sparingly) | No |
 
-- `evidence[]`: Array of `{text, source, locator}`. Verbatim supporting quotes.
-  - `text`: The exact quote
-  - `source`: Source ID (e.g. `src_01ABC`)
-  - `locator`: Optional position reference (page, section)
-- `qualifier`: Confidence level
-  - `certain`: Multiple independent sources confirm
-  - `likely`: Good evidence, some room for doubt
-  - `presumably`: Reasonable inference, limited evidence
-  - `tentative`: Speculative, needs more evidence
-- `voice`: How the note was produced
-  - `synthesized`: Your own thinking (preferred)
-  - `restated`: Rephrased from source
-  - `extracted`: Direct from source (use sparingly)
-  - `experiential`: From practice — running code, testing hypotheses, observing outcomes
+## Body (markdown after frontmatter)
 
-## Frame Fields
+Everything that isn't the title goes in the body:
+- **Evidence**: use markdown blockquotes (`> "quote" — Source`)
+- **Confidence**: state in prose ("**likely** based on 2 sources")
+- **Scope**: mention if it's a big-picture principle or supporting detail
+- **Perspective**: describe what this view sees and ignores
+- **Questions**: pose open questions in the body text
+- **Inline references**: mention other note IDs naturally in prose
 
-- `sees`: What this perspective reveals
-- `ignores`: What this perspective overlooks
-- `assumptions[]`: What it takes for granted
+The body is free-form markdown. No required structure. Write naturally.
 
-## Question Fields
+## Source Fields
 
-- `question_status`: `open` | `tentative_answer` | `resolved` | `superseded`
-
-## Hierarchy (Reif/Miller)
-
-- `scope`: `big_picture` (core insight) | `detail` (supporting point)
-  - Big-picture notes linked to detail notes form natural hierarchy through supports links
-  - No folders or containers needed
-
-## Link Fields
-
-- `supports[]`: Note IDs this note strengthens
-- `contradicts[]`: Note IDs this note conflicts with (auto-bidirectional)
-- `refines[]`: Note IDs this note is a more precise version of
-- `related[]`: Array of `{id, note}` for loose associations (use sparingly)
-- `bridges[]`: Note IDs being connected (for connection notes)
-- `entries[]`: Note IDs serving as entry points (for structure notes)
-
-## Provenance
-
-- `source`: Source ID this note was compiled from
-- `status`: `active` | `superseded`
+| Field | Required | Description |
+|-------|----------|-------------|
+| `id` | auto | Unique ID (src_ULID) |
+| `type` | auto | Always "source" |
+| `title` | yes | Article/document title |
+| `source_type` | no | web_article, markdown, plain_text, manual_note |
+| `url` | no | Original URL |
+| `author` | no | Author name |
+| `word_count` | auto | Word count |
+| `created_at` | auto | ISO timestamp |
 
 ## Batch References
 
