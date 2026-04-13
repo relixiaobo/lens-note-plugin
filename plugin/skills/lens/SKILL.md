@@ -41,6 +41,7 @@ lens write --file <path> --json    # Write anything (from JSON file)
 lens list notes --orphans --json   # List orphan notes (+ --limit/--offset)
 lens fetch <url> [--save] --json   # Extract web content
 lens similar <id> --json           # Find near-duplicate notes (+ --threshold)
+lens similar --all --json          # Scan all notes, group duplicates
 lens status --json                 # Stats + graph health
 lens tasks [--all|--done] --json    # List tasks (default: open)
 ```
@@ -90,10 +91,18 @@ lens similar <id> --json                # default threshold: 0.3
 lens similar <id> --threshold 0.5 --json  # stricter matching
 ```
 
+To scan all notes at once and group duplicates:
+
+```bash
+lens similar --all --json               # all groups above 0.3
+lens similar --all --threshold 0.8 --json  # only high-confidence duplicates
+```
+
 - Only works on notes (not sources or tasks)
 - Uses character trigrams + Dice coefficient — language-agnostic (works for CJK, Latin, etc.)
 - `--threshold`: 0–1 float. Default 0.3 catches loose duplicates; 0.5+ for stricter matching
-- Output: `{"id": "...", "count": N, "results": [{"id": "...", "title": "...", "similarity": 0.65}, ...]}`
+- Single-note output: `{"id": "...", "count": N, "results": [{"id": "...", "title": "...", "similarity": 0.65}, ...]}`
+- `--all` output: `{"count": N, "groups": [{"notes": [...], "pairs": [{"a": "...", "b": "...", "similarity": 0.9}]}]}`
 
 If a near-duplicate is found (similarity > 0.5), consider merging instead of keeping both: update the existing note with new evidence and delete the new one.
 
