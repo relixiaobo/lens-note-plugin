@@ -51,11 +51,23 @@ The body is free-form markdown. No required structure. Write naturally.
 | `id` | auto | Unique ID (src_ULID) |
 | `type` | auto | Always "source" |
 | `title` | yes | Article/document title |
-| `source_type` | no | web_article, markdown, plain_text, manual_note |
+| `source_type` | no | web_article, markdown, plain_text, manual_note, note_batch, conversation |
 | `url` | no | Original URL |
 | `author` | no | Author name |
 | `word_count` | auto | Word count |
 | `created_at` | auto | ISO timestamp |
+
+## Task Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `id` | auto | Unique ID (task_ULID) |
+| `type` | auto | Always "task" |
+| `title` | yes | What needs to be done |
+| `status` | no | `open` (default) or `done` |
+| `links` | no | Array of relationships |
+| `created_at` | auto | ISO timestamp |
+| `updated_at` | auto | ISO timestamp |
 
 ## Batch References
 

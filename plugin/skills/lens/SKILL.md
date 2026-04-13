@@ -32,6 +32,7 @@ lens show <id> --json              # Read one object with links
 lens write --file <path> --json    # Write anything (from JSON file)
 lens fetch <url> [--save] --json   # Extract web content
 lens status --json                 # Stats + graph health
+lens tasks [--all|--done]          # List tasks (default: open)
 ```
 
 ### --stdin mode (recommended for complex content)
@@ -120,6 +121,7 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 ```json
 {"type": "note", "title": "...", "links": [{"to": "note_ID", "rel": "supports", "reason": "..."}], "body": "..."}
 {"type": "source", "title": "...", "url": "...", "source_type": "web_article"}
+{"type": "task", "title": "...", "status": "open"}
 {"type": "link", "from": "note_A", "rel": "supports", "to": "note_B", "reason": "..."}
 {"type": "update", "id": "note_A", "set": {"title": "..."}, "add": {"links": [...]}, "body": "..."}
 {"type": "delete", "id": "note_A"}
