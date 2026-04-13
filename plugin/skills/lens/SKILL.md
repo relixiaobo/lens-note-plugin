@@ -1,6 +1,6 @@
 ---
 name: lens
-description: Store, query, and link knowledge in a persistent knowledge graph. Use when the user wants to save a note, record knowledge, asks "记一下", "save this", "记录笔记", references prior research, asks "what do I know about...", wants to compile an article, says "check lens", or when the conversation topic may relate to previously compiled knowledge.
+description: Store, query, and link knowledge in a persistent knowledge graph. Use when the user wants to save a note, record knowledge, asks "save this", "remember this", references prior research, asks "what do I know about...", wants to compile an article, says "check lens", or when the conversation topic may relate to previously compiled knowledge.
 ---
 
 # lens — knowledge graph for agents
@@ -27,7 +27,7 @@ When lens is relevant, identify the mode before acting:
 | "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
 | "this contradicts..." / records a contradiction | **Update** | Search the contradicting note → update or link. |
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
-| "who is X" / "enrich" / "补充背景" | **Enrich** | Build entity card (person/work/concept) with your knowledge. |
+| "who is X" / "enrich" / "add background" | **Enrich** | Build entity card (person/work/concept) with your knowledge. |
 | "check feeds" / "what's new" / RSS processing | **Feed** | Read [references/feeds.md](references/feeds.md) first. |
 | "where do I start with X" / navigation | **Index** | Use keyword index as entry point, then follow links. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
@@ -352,10 +352,10 @@ A sparse keyword index — curated entry points into the knowledge graph. Each k
 
 ```bash
 lens index --json                              # list all keywords
-lens index "Agent设计" --json                   # show entries for keyword
-lens index add "Agent设计" note_01ABC --json    # register entry
-lens index remove "Agent设计" --json            # remove keyword
-lens index remove "Agent设计" note_01ABC --json # remove single entry
+lens index "distributed systems" --json          # show entries for keyword
+lens index add "distributed systems" note_01ABC --json  # register entry
+lens index remove "distributed systems" --json  # remove keyword
+lens index remove "distributed systems" note_01ABC --json # remove single entry
 ```
 
 List output: `{"count": N, "keywords": {"kw": [{"id": "...", "title": "..."}]}}`
