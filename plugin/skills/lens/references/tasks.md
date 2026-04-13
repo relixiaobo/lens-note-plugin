@@ -8,9 +8,11 @@ Knowledge (note) → inspires → Task → doing → produces → Knowledge (not
 
 ## When to Create Tasks
 
-- User explicitly asks you to do something: "帮我调研一下 X"
-- You discover something to investigate during compilation: a contradiction to verify, a gap to fill
-- User says "记一下要做的事" / "TODO" / "add a task"
+- User explicitly asks to track something: "记个任务" / "加到待办" / "TODO"
+- You discover something that needs follow-up across sessions: a contradiction to verify, a gap to fill
+- Work that cannot be completed in the current conversation and needs to be remembered
+
+**Do NOT create tasks for normal requests.** "帮我查一下 X" / "分析这篇文章" / "解释一下 Y" — just do them. Tasks are for work the user wants to track, not for every request.
 
 ## Creating a Task
 

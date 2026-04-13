@@ -22,7 +22,7 @@ When lens is relevant, identify the mode before acting:
 | "我对X了解多少" / "what do I know about" | **Query** | Search → show → synthesize with citations. |
 | "整理笔记" / "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
 | "这和之前矛盾" / records a contradiction | **Update** | Search the contradicting note → update or link. |
-| "帮我做" / "TODO" / "待办" / assigns work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
+| "记个任务" / "加到待办" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
 
 ## 5 Commands
