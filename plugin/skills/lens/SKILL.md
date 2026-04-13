@@ -243,6 +243,8 @@ Returns full object with body, forward/backward links and counts:
  }}
 ```
 
+**IMPORTANT**: `links` in show output is an **object** `{forward: [], backward: []}`, NOT an array. To access forward links: `d["links"]["forward"]`. To get counts: `d["forward_link_count"]` and `d["backward_link_count"]` (top-level fields, not nested).
+
 ### links
 
 Shows all relationships for an object (outgoing and incoming):
@@ -365,6 +367,18 @@ This does case-insensitive exact title matching first, then falls back to FTS5. 
 **Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter.
 
 For full field reference, read [references/note-fields.md](references/note-fields.md).
+
+## Common Pitfalls
+
+1. **`show` links is an object, not an array.** `d["links"]` returns `{"forward": [...], "backward": [...]}`. To iterate forward links: `d["links"]["forward"]`. Link counts are top-level: `d["forward_link_count"]`.
+
+2. **Never truncate note IDs.** IDs are exactly `prefix_` + 26 uppercase chars (ULID). `note_01KP2SFME1Z07MX` is too short and will be rejected. Always copy the full ID.
+
+3. **`--stdin` is always JSON mode.** Do not add `--json` flag with `--stdin` — it's redundant (not harmful, but unnecessary).
+
+4. **Curly quotes break JSON.** `"word"` (U+201C/U+201D) is not valid JSON. Use straight quotes `"word"`. When writing JSON files with special characters, use the Write tool — do not construct JSON strings by hand.
+
+5. **Error responses are JSON too.** When a command fails, stdout is `{"error": {"code": "...", "message": "..."}}`. Always check exit code or parse the response before assuming success.
 
 ## Errors
 
