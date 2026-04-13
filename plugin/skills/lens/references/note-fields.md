@@ -65,6 +65,7 @@ The body is free-form markdown. No required structure. Write naturally.
 | `type` | auto | Always "task" |
 | `title` | yes | What needs to be done |
 | `status` | no | `open` (default) or `done` |
+| `source` | no | Note or source ID that prompted this task |
 | `links` | no | Array of relationships |
 | `created_at` | auto | ISO timestamp |
 | `updated_at` | auto | ISO timestamp |

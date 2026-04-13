@@ -25,7 +25,7 @@ When lens is relevant, identify the mode before acting:
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
 
-## 5 Commands
+## Commands
 
 ```bash
 lens search "<query>" --json       # Find notes
@@ -33,7 +33,7 @@ lens show <id> --json              # Read one object with links
 lens write --file <path> --json    # Write anything (from JSON file)
 lens fetch <url> [--save] --json   # Extract web content
 lens status --json                 # Stats + graph health
-lens tasks [--all|--done]          # List tasks (default: open)
+lens tasks [--all|--done] --json    # List tasks (default: open)
 ```
 
 ### --stdin mode (recommended for complex content)
