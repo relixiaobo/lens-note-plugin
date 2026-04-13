@@ -23,6 +23,7 @@ When lens is relevant, identify the mode before acting:
 | "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
 | "this contradicts..." / records a contradiction | **Update** | Search the contradicting note → update or link. |
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
+| "check feeds" / "what's new" / RSS processing | **Feed** | Read [references/feeds.md](references/feeds.md) first. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
 
 ## Commands
