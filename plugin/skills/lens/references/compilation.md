@@ -1,82 +1,122 @@
-# Compilation Methodology
+# The Collision Method
 
-How to compile an article into high-quality, connected knowledge. Based on Luhmann's Zettelkasten method.
+Knowledge grows through collision, not through collection.
 
-## Core Principle
+## The Cycle: Spark → Collide → Crystallize
 
-You are a **thinker**, not an extractor. Don't summarize what the article says. Write your OWN thoughts triggered by the reading. "The article says X" is worthless. "X contradicts what we know about Y, which suggests Z" is valuable.
+### Spark
 
-## Process
+A thought arrives. It can come from anywhere:
+- An article you're reading
+- A conversation you're having
+- A sudden insight
+- Reviewing existing notes
+- Practicing something (writing code, running an experiment)
 
-### 1. Fetch the article
+The source doesn't matter. What matters is: you now have a thought that wants to meet your existing knowledge.
 
-```bash
-lens fetch <url> --save --json
-```
+### Collide
 
-This returns `source_id` and `markdown`. Read the article fully before proceeding.
-
-### 2. Search existing knowledge
-
-```bash
-lens search "key concept 1" --json
-lens search "key concept 2" --json
-```
-
-Search 2-4 key concepts from the article. For each result found:
+Bring your thought to the knowledge graph. This is where value is created.
 
 ```bash
-lens show <id> --json
+lens search "key concepts from your thought" --json
 ```
 
-Read the full note. Understand what you already know. This step is critical — the value of compilation comes from **collision** between new ideas and existing knowledge.
+When you find related notes, **don't just read them — wander.** Look at their links. Follow them. See what THOSE notes connect to.
 
-### 3. Think: for each candidate idea from the article
-
-Ask yourself:
-
-- **Does it duplicate an existing note?** → Don't create. Optionally update the existing note with new evidence.
-- **Does it support an existing note?** → Update the existing note (add evidence, strengthen qualifier). Only create a new note if the support itself is an independent insight.
-- **Does it contradict an existing note?** → THIS is the most valuable outcome. Create a new note with a `contradicts` link. Explain the tension.
-- **Does it refine an existing note?** → Update or create with `refines` link.
-- **Is it genuinely new?** → Create a new note. Link it to related existing notes.
-- **Is it common knowledge?** → Skip entirely.
-
-### 4. Write
-
-For updates to existing notes:
 ```bash
-echo '{"type":"update","id":"note_EXISTING","add":{"evidence":[{"text":"supporting quote","source":"src_NEW"}]},"set":{"qualifier":"likely"}}' | lens write --json
+lens show note_01ABC --json    # Read it. See its links.
+lens show note_01DEF --json    # Follow a link. What's here?
 ```
 
-For new notes:
-```bash
-echo '{"type":"note","text":"Your concept-oriented insight","role":"claim","qualifier":"likely","source":"src_NEW","contradicts":["note_EXISTING"]}' | lens write --json
-```
+This wandering is not aimless. You're carrying your thought through the graph, watching what happens when it meets different existing ideas. Luhmann called this "communicating with the slip-box" — the graph talks back.
 
-## Quality Rules
+What to notice during collision:
+- **Agreement**: your thought strengthens something you already know
+- **Tension**: your thought conflicts with an existing note — THIS is the most valuable moment
+- **Gap**: your thought enters territory with no existing notes
+- **Surprise**: you discover a connection between your thought and a note you didn't expect
 
-**1. Concept-oriented, not source-oriented.** Bad: "Notes from Fowler's article." Good: "High internal quality has negative cost in software." The note must stand alone without naming its source article.
+### Crystallize
 
-**2. Rewrite in your own words.** Don't copy passages. Reformulate the idea. Use `voice: "synthesized"` for your thinking. Use `"extracted"` only for verbatim quotes inside `evidence[]`.
+Write what emerged from the collision. Not what the article said. Not what you already knew. The NEW understanding that neither had alone.
 
-**3. One idea per note.** If a note contains multiple claims, split it. Each note should express exactly one independent thought.
+Crystallization takes many forms:
 
-**4. Every link needs a reason.** Don't link because topics are vaguely related. Loose associations are noise. Ask: "why does this note SPECIFICALLY support/contradict/refine that one?"
+| What happened | What to do |
+|--------------|------------|
+| Genuinely new insight | Create a note with links to what it collided with |
+| Strengthened existing understanding | Update: add evidence, strengthen qualifier |
+| Found a contradiction | Create a note with `contradicts` link. Explain the tension. |
+| Two old notes are actually the same | Merge: update the better one, delete the other |
+| Old understanding superseded | Update: set `status: "superseded"` |
+| Multiple insights emerged | Multiple notes + links between them |
+| Nothing new after collision | Do nothing. This is a valid outcome. |
 
-**5. Update before create.** If a new article provides evidence for an existing claim, update it — don't create a duplicate. The knowledge graph should grow in depth, not just in breadth.
+## When Collision Isn't Deep Enough
 
-**6. Zero new notes is acceptable.** An article covering familiar ground should produce updates to existing notes, not new ones. The number follows from genuine thinking, not from a quota.
+Sometimes you collide and nothing happens — the encounter is too surface-level. Four natural moves to go deeper:
 
-**7. Contradictions are the most valuable output.** When you find a tension between a new idea and an existing note, that IS the insight. Don't smooth over disagreements.
+**Break apart** — The concept is too big or vague. Split it. Look at it from different angles. What does it assume? What would it look like from the opposite perspective?
 
-**8. Scope awareness.** Mark notes as `big_picture` (core insight) or `detail` (supporting point). Big-picture notes supported by detail notes form natural hierarchy through links — no folders needed.
+**Drill down** — You have a "so what?" feeling. Keep asking: why is this true? What's underneath? What would break if this were false? Don't stop until you reach something solid.
+
+**Reduce** — Too many dimensions, too much complexity. What are the 2-3 truly independent axes? Everything else is a combination. Find the basis vectors.
+
+**Debate** — Your thought and an existing note genuinely disagree. Don't smooth it over. Let both sides speak. The tension IS the insight. Write it as a `contradicts` link with your analysis of where the disagreement lives.
+
+## The Shape of Good Crystallization
+
+Each crystal (note) should be:
+
+- **One idea** — If it contains multiple claims, split it. A clear thought holds one thing.
+- **Independent** — Understandable without knowing which article triggered it. "High internal quality has negative cost in software" not "Fowler's article argues that..."
+- **In your words** — Reformulated, not copied. You discover what you think by trying to express it. Use `voice: "synthesized"`.
+- **Placed** — Linked to the notes it collided with. The link IS the context. Without it, the note is an orphan — a seed waiting for a future collision.
+
+## What About Scope?
+
+Some crystallizations are big-picture principles. Others are supporting details. Mark them:
+- `scope: "big_picture"` — A core insight that other notes support
+- `scope: "detail"` — A specific point that strengthens a big-picture note
+
+Big-picture notes linked to detail notes form natural hierarchy. No folders needed.
+
+## What About Evidence?
+
+When your crystallization is a claim you're confident about, ground it:
+- `evidence[]` — Verbatim quotes that support the claim
+- `qualifier` — How confident: certain / likely / presumably / tentative
+- Multiple sources confirming the same claim → stronger qualifier
+
+## What About Frames?
+
+Sometimes the insight isn't a claim but a *perspective* — a way of seeing that reveals some things and hides others:
+- `sees` — What this perspective makes visible
+- `ignores` — What it overlooks
+- `assumptions[]` — What it takes for granted
+
+Frames are among the most valuable notes. They don't add facts — they change how you interpret facts.
+
+## Process for Deep Compilation (Articles)
+
+When the spark is a full article:
+
+1. `lens fetch <url> --save --json` — Get the content and register the source.
+2. Read the article fully. Don't start writing yet.
+3. Identify your strongest reactions — what surprised you, what you disagreed with, what connected to something you know.
+4. For each reaction: carry it into the graph. `lens search` → `lens show` → follow links → wander.
+5. At each collision point: crystallize.
+6. For existing notes that gain new evidence: `lens write '{"type":"update",...}'`
+7. For new insights: `lens write '{"type":"note",...}'`
+8. Zero new notes is acceptable. An article that only strengthens existing knowledge produces updates, not new notes.
 
 ## Anti-Patterns
 
-- Creating a note for every paragraph of the article
-- Notes that are rephrased sentences from the article (extraction, not thinking)
-- Notes that only make sense if you know which article they came from
-- Orphan notes with no links to existing knowledge
-- Using `supports` everywhere because it's safe (look harder for contradictions)
-- Creating a `structure_note` per article (structure notes are post-hoc, sparse index entries created after clusters form naturally)
+- **Extraction**: creating a note for every paragraph of the article
+- **Source-oriented notes**: notes that only make sense if you name the source
+- **Linking because you can**: vague associations are noise, not structure
+- **Always creating new**: an article that covers known ground should produce updates
+- **Smoothing over contradictions**: tension is insight. Don't resolve it prematurely.
+- **Pre-building structure**: structure notes are sparse post-hoc index entries, created after clusters form naturally. Never one per article.

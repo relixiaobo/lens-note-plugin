@@ -34,6 +34,7 @@ Role is a display hint, not a constraint. A note can have evidence (claim) AND s
   - `synthesized`: Your own thinking (preferred)
   - `restated`: Rephrased from source
   - `extracted`: Direct from source (use sparingly)
+  - `experiential`: From practice — running code, testing hypotheses, observing outcomes
 
 ## Frame Fields
 

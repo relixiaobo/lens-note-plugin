@@ -29,7 +29,7 @@ When lens is relevant, identify the mode before acting:
 ```bash
 lens search "<query>" --json       # Find notes
 lens show <id> --json              # Read one object with links
-echo '<json>' | lens write --json  # Write anything
+lens write '<json>' --json         # Write anything (arg or stdin)
 lens fetch <url> [--save] --json   # Extract web content
 lens status --json                 # Stats + graph health
 ```
@@ -84,9 +84,11 @@ lens search "topic keywords" --json
 
 ## Mode: Compile
 
-Deep analysis of an article into linked knowledge. **Read [references/compilation.md](references/compilation.md) before proceeding** — it contains the full methodology for producing high-quality, connected notes.
+Deep processing using the **Collision Method**: Spark → Collide → Crystallize.
 
-Quick summary: fetch → search existing knowledge → think about connections → write concept-oriented notes with links. Update existing notes when possible. Zero new notes is acceptable.
+**Read [references/compilation.md](references/compilation.md) before proceeding** — it contains the full methodology.
+
+Quick summary: fetch content → carry your thoughts into the knowledge graph → wander through existing notes following links → crystallize what emerges from the collision. Update existing notes when possible. Zero new notes is acceptable.
 
 ## Mode: Curate
 
