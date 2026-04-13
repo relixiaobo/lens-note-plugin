@@ -4,7 +4,7 @@ How to maintain knowledge graph health. Based on Karpathy's "lint" concept and L
 
 ## When to Curate
 
-- User explicitly asks ("clean up my notes", "fix orphans", "整理笔记")
+- User explicitly asks ("clean up my notes", "fix orphans")
 - `lens status --json` shows high orphan rate (>10%)
 - After a batch of compilations, as a follow-up pass
 

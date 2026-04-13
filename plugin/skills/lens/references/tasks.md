@@ -8,16 +8,16 @@ Knowledge (note) → inspires → Task → doing → produces → Knowledge (not
 
 ## When to Create Tasks
 
-- User explicitly asks to track something: "记个任务" / "加到待办" / "TODO"
+- User explicitly asks to track something: "add a task" / "TODO"
 - You discover something that needs follow-up across sessions: a contradiction to verify, a gap to fill
 - Work that cannot be completed in the current conversation and needs to be remembered
 
-**Do NOT create tasks for normal requests.** "帮我查一下 X" / "分析这篇文章" / "解释一下 Y" — just do them. Tasks are for work the user wants to track, not for every request.
+**Do NOT create tasks for normal requests.** "look up X" / "analyze this article" / "explain Y" — just do them. Tasks are for work the user wants to track, not for every request.
 
 ## Creating a Task
 
 ```bash
-printf '%s' '{"command":"write","input":{"type":"task","title":"调研 MCP 协议的设计理念","status":"open","body":"重点关注与 CLI 的关系","links":[{"to":"note_01ABC","rel":"related","reason":"来自这条笔记的启发"}]}}' | lens --stdin
+printf '%s' '{"command":"write","input":{"type":"task","title":"Research MCP protocol design principles","status":"open","body":"Focus on relationship with CLI approach","links":[{"to":"note_01ABC","rel":"related","reason":"Inspired by this note"}]}}' | lens --stdin
 ```
 
 - `title`: what needs doing (imperative, one sentence)

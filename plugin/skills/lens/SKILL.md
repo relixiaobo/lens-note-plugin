@@ -17,12 +17,12 @@ When lens is relevant, identify the mode before acting:
 
 | User says | Mode | What to do |
 |-----------|------|------------|
-| "记一下" / "save this" / quick thought | **Capture** | Write immediately. No search needed. |
-| "编译" / "compile" / "analyze this article" | **Compile** | Read [references/compilation.md](references/compilation.md) first. |
-| "我对X了解多少" / "what do I know about" | **Query** | Search → show → synthesize with citations. |
-| "整理笔记" / "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
-| "这和之前矛盾" / records a contradiction | **Update** | Search the contradicting note → update or link. |
-| "记个任务" / "加到待办" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
+| "save this" / quick thought | **Capture** | Write immediately. No search needed. |
+| "compile" / "analyze this article" | **Compile** | Read [references/compilation.md](references/compilation.md) first. |
+| "what do I know about X" | **Query** | Search → show → synthesize with citations. |
+| "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
+| "this contradicts..." / records a contradiction | **Update** | Search the contradicting note → update or link. |
+| "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
 
 ## 5 Commands
@@ -42,7 +42,7 @@ All commands support `--stdin` — pass a JSON request envelope via stdin. Conte
 
 ```bash
 # Write (content goes in "input", never through shell)
-printf '%s' '{"command":"write","input":{"type":"note","title":"标题","body":"正文..."}}' | lens --stdin
+printf '%s' '{"command":"write","input":{"type":"note","title":"My insight","body":"Details..."}}' | lens --stdin
 
 # Search
 printf '%s' '{"command":"search","positional":["query text"]}' | lens --stdin
