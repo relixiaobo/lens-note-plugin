@@ -51,7 +51,7 @@ The body is free-form markdown. No required structure. Write naturally.
 | `id` | auto | Unique ID (src_ULID) |
 | `type` | auto | Always "source" |
 | `title` | yes | Article/document title |
-| `source_type` | no | web_article, markdown, plain_text, manual_note, note_batch, conversation |
+| `source_type` | no | book, paper, report, video, podcast, course, web_article, newsletter, social_post, conversation, manual_note, note_batch, markdown, plain_text |
 | `url` | no | Original URL |
 | `author` | no | Author name |
 | `word_count` | auto | Word count |

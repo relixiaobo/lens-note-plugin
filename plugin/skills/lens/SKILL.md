@@ -25,6 +25,7 @@ When lens is relevant, identify the mode before acting:
 | "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
 | "this contradicts..." / records a contradiction | **Update** | Search the contradicting note → update or link. |
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
+| "who is X" / "enrich" / "补充背景" | **Enrich** | Build entity card (person/work/concept) with your knowledge. |
 | "check feeds" / "what's new" / RSS processing | **Feed** | Read [references/feeds.md](references/feeds.md) first. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
 
@@ -116,6 +117,40 @@ Deep processing using the **Collision Method**: Spark → Collide → Crystalliz
 **Read [references/compilation.md](references/compilation.md) before proceeding** — it contains the full methodology.
 
 Quick summary: fetch content → carry your thoughts into the knowledge graph → wander through existing notes following links → crystallize what emerges from the collision. Update existing notes when possible. Zero new notes is acceptable.
+
+## Mode: Enrich
+
+Build entity cards for people, works, or concepts using your own knowledge.
+
+**People** → Note. Body structure:
+```markdown
+## Basic Info
+- Identity, field, era
+
+## Core Ideas
+- Key theories, contributions
+
+## Major Works
+- Titles with years
+```
+
+**Works** (books, papers, talks) → Source with `source_type: "book"` / `"paper"` / `"video"` etc. Body: summary + key arguments.
+
+**Concepts** (recurring theories/frameworks) → Note. Body: definition, origin, related concepts.
+
+Workflow:
+1. `lens search "entity name" --resolve --json` — check if exists
+2. If exists → update with new info. If not → create.
+3. Link to related notes: person ↔ works ↔ ideas.
+
+## Entity Extraction (during Compile)
+
+While compiling content, automatically detect mentions of people, works, and concepts. For each:
+1. Search if the entity already has a card in lens
+2. If not, create one (person → Note, work → Source, concept → Note)
+3. Link the insight notes to the entity cards
+
+This happens naturally during the Collide step — you're already searching the graph. Extend the search to include entity names.
 
 ## Mode: Curate
 
