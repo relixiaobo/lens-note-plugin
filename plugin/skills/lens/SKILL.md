@@ -9,6 +9,8 @@ lens stores, queries, and links structured knowledge. You do the thinking; lens 
 
 **lens vs auto memory**: Knowledge, ideas, insights, notes → store in lens. Only personal preferences and work habits → auto memory. When unsure, prefer lens.
 
+**Entity awareness (all modes)**: When content mentions a specific person, book, or concept, always search if an entity card exists (`lens search --resolve`). If not, create one alongside the main action: person → Note (with bio, contributions, key works in body), book/work → Source (`source_type: "book"` etc., with summary in body), concept → Note (with definition, origin in body). Link the entity cards to each other and to the user's content.
+
 ## Setup
 
 Check: `which lens`. If missing: `npm install -g lens-note && lens init`
