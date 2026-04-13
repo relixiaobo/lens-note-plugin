@@ -222,7 +222,7 @@ Quick summary: check orphan count → find connections for unlinked notes → on
 
 ```json
 {"query": "...", "count": 3, "results": [
-  {"id": "note_01A", "type": "note", "title": "...", "links": [...]},
+  {"id": "note_01A", "type": "note", "title": "...", "forward_links": [...]},
   {"id": "src_01B", "type": "source", "title": "...", "source_type": "web_article", "word_count": 2718},
   {"id": "task_01C", "type": "task", "title": "...", "status": "open"}
 ]}
@@ -232,27 +232,24 @@ Quick summary: check orphan count → find connections for unlinked notes → on
 
 ### show
 
-Returns full object with body, forward/backward links and counts:
+Returns full object with body and links as top-level arrays:
 
 ```json
 {"id": "note_01A", "type": "note", "title": "...", "body": "...",
- "forward_link_count": 2, "backward_link_count": 1,
- "links": {
-   "forward": [{"to": "note_01B", "rel": "supports", "reason": "...", "title": "Target title"}],
-   "backward": [{"from": "note_01C", "rel": "refines", "title": "Source title"}]
- }}
+ "forward_links": [{"id": "note_01B", "rel": "supports", "reason": "...", "title": "Target title"}],
+ "backward_links": [{"id": "note_01C", "rel": "refines", "title": "Source title"}]}
 ```
 
-**IMPORTANT**: `links` in show output is an **object** `{forward: [], backward: []}`, NOT an array. To access forward links: `d["links"]["forward"]`. To get counts: `d["forward_link_count"]` and `d["backward_link_count"]` (top-level fields, not nested).
+`forward_links` and `backward_links` are arrays at the top level. Each link item has `id`, `rel`, `title`, and optionally `reason`.
 
 ### links
 
-Shows all relationships for an object (outgoing and incoming):
+Shows all relationships for an object:
 
 ```json
 {"id": "note_01A",
- "outgoing": [{"id": "note_01B", "rel": "supports", "type": "note", "label": "Target title"}],
- "incoming": [{"id": "note_01C", "rel": "refines", "type": "note", "label": "Source title"}]}
+ "forward": [{"id": "note_01B", "rel": "supports", "type": "note", "title": "Target title"}],
+ "backward": [{"id": "note_01C", "rel": "refines", "type": "note", "title": "Source title"}]}
 ```
 
 Use `links` to explore the graph — follow connections to discover related knowledge.
@@ -370,7 +367,7 @@ For full field reference, read [references/note-fields.md](references/note-field
 
 ## Common Pitfalls
 
-1. **`show` links is an object, not an array.** `d["links"]` returns `{"forward": [...], "backward": [...]}`. To iterate forward links: `d["links"]["forward"]`. Link counts are top-level: `d["forward_link_count"]`.
+1. **Link field naming is consistent.** `show` returns `forward_links[]` and `backward_links[]` (top-level arrays). `links` returns `forward[]` and `backward[]`. `search` and `list` return `forward_links[]`. Each link item uses `id`, `rel`, `title`.
 
 2. **Never truncate note IDs.** IDs are exactly `prefix_` + 26 uppercase chars (ULID). `note_01KP2SFME1Z07MX` is too short and will be rejected. Always copy the full ID.
 
