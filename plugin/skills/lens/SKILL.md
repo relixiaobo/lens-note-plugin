@@ -54,7 +54,7 @@ Two ways to pass JSON input to lens. Choose based on content:
 | `--stdin` | Agent envelope protocol, simple commands | Single pipe, no temp file |
 | `--file` | Batch writes, content with special chars (Chinese, curly quotes, newlines) | Encoding-safe, debuggable |
 
-**For content with Chinese or special characters**, prefer `--file`: write JSON to a temp file first, then `lens write --file <path> --json`. This avoids shell escaping issues entirely. If generating JSON programmatically, use `python3 -c "import json; json.dump(..., open('/tmp/f.json','w'), ensure_ascii=False)"` for reliable encoding.
+**For content with Chinese or special characters**, prefer `--file`: write JSON to a temp file first, then `lens write --file <path> --json`. This avoids shell escaping issues entirely.
 
 **`--stdin` envelope format** — all commands via stdin bypass shell escaping:
 
