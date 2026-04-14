@@ -1,10 +1,10 @@
 ---
-description: Save a URL and prepare a collision for your review
+description: Save a URL and process it into your knowledge graph in the background
 argument-hint: '<url>'
 allowed-tools: Bash(lens:*), Agent
 ---
 
-Save and prepare: $ARGUMENTS
+Save and process: $ARGUMENTS
 
 **Step 1 — Save** (foreground):
 
@@ -12,40 +12,32 @@ Run: `lens fetch "$ARGUMENTS" --save --json`
 
 If fetch fails: report the error clearly and stop.
 
-If successful: tell the user the article **title** and **word count**. Say: "Saved. Preparing your collision in the background."
+If successful: tell the user the article **title** and **word count**. Say: "Saved. Processing in the background."
 
-**Step 2 — Prepare collision** (background):
+**Step 2 — Process** (background):
 
 Spawn a background Agent with the following instruction (substitute actual `<source_id>` and `<title>` from Step 1):
 
-> A new source `<source_id>` titled "<title>" was saved to lens. Find where this article meets the user's existing thinking — don't extract notes, just map the collision and leave one task.
+> Process the source `<source_id>` titled "<title>" into the user's knowledge graph.
+>
+> **Your job**: read the article, find where it meets the user's existing thinking, and write what actually emerged — not what the article said, but what's new or different when it meets what's already there.
 >
 > Steps:
 > 1. Read the full source: `lens show <source_id> --json`
-> 2. Pick out 2–4 things the article actually says (not themes — concrete claims)
-> 3. Search for each in the user's notes: `lens search "<keywords>" --json`
+> 2. Pick out 2–4 concrete claims from the article (not themes — specific things it actually says)
+> 3. For each claim, search the user's notes: `lens search "<keywords>" --json`
 > 4. Read the top results: `lens show <id> --json`
-> 5. Find where they connect, clash, or push past what the user already thinks
+> 5. See what happens when the article meets the existing notes:
+>    - Pulls in a different direction from an existing note → `contradicts` link
+>    - Backs up something the user already thinks → `supports` link
+>    - Adds precision to an existing note → `refines` link
+>    - Genuinely new ground with no connections yet → create as a seed note, no links for now
+>    - Basically confirms what's already there → update the existing note, don't create a new one
 >
-> Create one task in lens. Write the body like you're leaving a note for a friend — plain language, short sentences, no academic framing. Say what you actually mean.
+> Write the notes that actually emerged from this. Use `lens write --file <tmp> --json` for batch writes. Link each note back to the source.
 >
-> Title: "Collide: <title>"
-> Status: open
-> Body:
+> **Plain language only.** Each note title is one clear claim. The body is evidence, context, or the reason the tension exists — written like you're explaining it to a friend, not summarizing an article.
 >
-> ## What this is about
-> 2–3 plain sentences. What does the article say? Not what it "explores" or "examines" — what does it actually claim?
->
-> ## Where it hits your notes
-> - "[Note title]" (`note_ID`) — [one plain sentence: does this back it up, clash with it, or take it further? say which and say why]
-> - "[Note title]" (`note_ID`) — [same]
-> (2–4 total)
->
-> ## Worth thinking about
-> One question in plain language — something only you can answer from your own experience. Not "how does this relate to your epistemological framework" — something real, like "does this change how you think about X?"
->
-> Use `lens write --file <tmp> --json` with `{"type":"task","title":"Collide: <title>","status":"open","body":"..."}` to create the task.
->
-> Do not write any notes. Only this one task. The user decides what gets written after they engage with it.
+> Do not extract notes mechanically — one per paragraph, one per idea from the article. Only write what's genuinely new or interesting when it meets the existing graph. Zero notes is a valid outcome if the article mostly confirms what's already there.
 
 Do not wait for the background agent to complete.
