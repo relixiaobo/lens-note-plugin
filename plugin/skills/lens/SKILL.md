@@ -1,6 +1,6 @@
 ---
 name: lens
-description: Store, query, and link knowledge in a persistent knowledge graph. Use when the user wants to save a note, record knowledge, asks "save this", "remember this", references prior research, asks "what do I know about...", wants to compile an article, says "check lens", or when the conversation topic may relate to previously compiled knowledge.
+description: Store, query, and link knowledge in a persistent knowledge graph. Use when the user wants to save a note, record knowledge, asks "save this", "remember this", references prior research, asks "what do I know about...", wants to compile an article, says "check lens", asks about tasks or TODOs ("what tasks", "check tasks", "任务"), or when the conversation topic may relate to previously compiled knowledge.
 ---
 
 # lens — knowledge graph for agents
@@ -66,6 +66,7 @@ When lens is relevant, identify the mode before acting:
 | "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
 | "this contradicts..." / records a contradiction | **Update** | Search the contradicting note → update or link. |
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
+| "what tasks" / "check tasks" / list open work | **Task list** | `lens tasks --json` → show open tasks. `lens tasks --all --json` for all. |
 | "who is X" / "enrich" / "add background" | **Enrich** | Build entity card (person/work/concept) with your knowledge. |
 | "check feeds" / "what's new" / RSS processing | **Feed** | Read [references/feeds.md](references/feeds.md) first. |
 | "where do I start with X" / navigation | **Index** | Use keyword index as entry point, then follow links. |
