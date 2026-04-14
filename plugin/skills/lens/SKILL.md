@@ -9,6 +9,8 @@ lens stores, queries, and links structured knowledge. You do the thinking; lens 
 
 **lens vs auto memory**: Knowledge, ideas, insights, notes → store in lens. Only personal preferences and work habits → auto memory. When unsure, prefer lens.
 
+**When in doubt, search.** If a note touches a topic that might already exist in the graph, run `lens search` before writing. This is how connections are discovered. Don't skip the search just because you're in a hurry — but don't search mechanically for every trivial capture either.
+
 **People, books, concepts**: When content mentions a specific person, book, or concept, search if a card for it already exists (`lens search --resolve`). If not, create one alongside the main action: person → Note (bio, key ideas, major works), book/work → Source (`source_type: "book"` etc., with summary in body), concept → Note (what it means, where it comes from). Link these cards to each other and to what the user is working on.
 
 ## Setup
@@ -21,7 +23,7 @@ When lens is relevant, identify the mode before acting:
 
 | User says | Mode | What to do |
 |-----------|------|------------|
-| "save this" / quick thought | **Capture** | Write immediately. No search needed. |
+| "save this" / quick thought | **Capture** | Search if topic might exist → write → link if match found. |
 | "compile" / "analyze this article" | **Compile** | Read [references/compilation.md](references/compilation.md) first. |
 | "what do I know about X" | **Query** | Search → show → synthesize with citations. |
 | "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
@@ -99,7 +101,15 @@ Envelope format: `{"command":"...", "positional":[], "flags":{}, "input":{}}`
 
 ## Mode: Capture
 
-For quick thoughts, observations, ideas. No overhead.
+For quick thoughts, observations, ideas. Fast, but not blind.
+
+If the topic might already exist in the graph, search first:
+
+```bash
+lens search "key concept from the thought" --json
+```
+
+If you find related notes, read the top 1-2 (`lens show <id> --json`) and create the new note with links. If nothing relevant or the thought is clearly new territory, write without links.
 
 ```bash
 printf '%s' '{"command":"write","input":{"type":"note","title":"Simple tools composed together beat complex frameworks"}}' | lens --stdin

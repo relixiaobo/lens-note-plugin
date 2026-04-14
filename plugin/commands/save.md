@@ -25,9 +25,12 @@ Spawn a background Agent with the following instruction (substitute actual `<sou
 > Steps:
 > 1. Read the full source: `lens show <source_id> --json`
 > 2. Pick out 2–4 concrete claims from the article (not themes — specific things it actually says)
-> 3. For each claim, search the user's notes: `lens search "<keywords>" --json`
-> 4. Read the top results: `lens show <id> --json`
-> 5. See what happens when the article meets the existing notes:
+> 3. **For each claim, search the user's existing notes** — this is the collision step:
+>    - `lens search "<keywords>" --json` — try different keyword angles if the first search misses
+>    - `lens show <id> --json` for the top results — read them, check their forward_links
+>    - Follow interesting links: `lens show <linked_id> --json` — the best connections are indirect ones
+>    - Don't skip this step. The value of lens is in the connections, not the individual notes.
+> 4. See what happens when the article meets the existing notes:
 >    - Pulls in a different direction from an existing note → `contradicts` link
 >    - Backs up something the user already thinks → `supports` link
 >    - Adds precision to an existing note → `refines` link
