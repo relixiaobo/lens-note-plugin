@@ -2,6 +2,17 @@
 
 How to migrate notes from Tana, Roam Research, Obsidian, or any other tool into lens.
 
+## Contents
+
+- [The Core Principle](#the-core-principle)
+- [Universal Flow](#universal-flow)
+- [Format-Specific Guidance](#format-specific-guidance)
+- [Decision Framework](#decision-framework)
+- [Writing the Batch](#writing-the-batch)
+- [Adding Links During Import](#adding-links-during-import)
+- [Post-Import Audit](#post-import-audit)
+- [What Not to Import](#what-not-to-import)
+
 ## The Core Principle
 
 Most knowledge base exports are 80% noise: daily logs, stubs, task lists, half-finished

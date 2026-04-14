@@ -2,6 +2,16 @@
 
 How to maintain knowledge graph health — find orphans, make connections, clean up what's stale.
 
+## Contents
+
+- [When to Curate](#when-to-curate)
+- [Process](#process)
+- [Merge and Supersede](#merge-and-supersede)
+- [Structure Notes and the Keyword Index](#structure-notes-and-the-keyword-index)
+- [After Bulk Compilation](#after-bulk-compilation)
+- [Dead Link Cleanup](#dead-link-cleanup)
+- [Anti-Patterns](#anti-patterns)
+
 ## When to Curate
 
 - User explicitly asks ("clean up my notes", "fix orphans")
