@@ -13,7 +13,6 @@
   "skills": "./skills/",
   "commands": [
     "./commands/recall.md",
-    "./commands/brief.md",
     "./commands/review.md",
     "./commands/save.md"
   ]
