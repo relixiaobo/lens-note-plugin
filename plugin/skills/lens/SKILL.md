@@ -13,9 +13,46 @@ lens stores, queries, and links structured knowledge. You do the thinking; lens 
 
 **People, books, concepts**: When content mentions a specific person, book, or concept, search if a card for it already exists (`lens search --resolve`). If not, create one alongside the main action: person → Note (bio, key ideas, major works), book/work → Source (`source_type: "book"` etc., with summary in body), concept → Note (what it means, where it comes from). Link these cards to each other and to what the user is working on.
 
+## Terminology
+
+lens has its own vocabulary — do NOT use terms from other knowledge management systems.
+
+| lens term | What it is | Do NOT call it |
+|-----------|-----------|---------------|
+| **Source** | Provenance record (article, book, video). Contains the original content. | "literature note" |
+| **Note** | Your thought — one claim per card. Every Note is a first-class citizen. | "permanent note", "fleeting note", "atomic note" |
+| **Task** | Action item that spans time. A Note with status. | "TODO", "reminder" |
+| **links[]** | Typed semantic edges: supports, contradicts, refines, related, indexes. | "backlinks", "wikilinks" |
+| **Structure note** | A Note that indexes a cluster using `rel: "indexes"`. | "MOC", "hub note", "index note" |
+
+There is no "fleeting note" in lens. If a thought is worth storing, it's a Note. If it's not worth storing, don't write it.
+
 ## Setup
 
 Check: `which lens`. If missing: `npm install -g lens-note && lens init`
+
+## User Context
+
+Before first use, check if the user has configured their context:
+
+```bash
+printf '%s' '{"command":"status"}' | lens --stdin    # look for "context" field
+```
+
+If `context` is missing or empty, ask the user:
+- **Role**: What's your role? (e.g., product manager, researcher, engineer, student)
+- **Audience**: Who reads your notes? (e.g., yourself, your team, public)
+- **Language**: Primary language for notes?
+- **Style**: Any writing preferences? (e.g., "explain implications", "be concise")
+
+Save their answers:
+
+```bash
+printf '%s' '{"command":"config","input":{"action":"set","key":"context.role","value":"product manager"}}' | lens --stdin
+printf '%s' '{"command":"config","input":{"action":"set","key":"context.audience","value":"engineering team"}}' | lens --stdin
+```
+
+When writing notes, adapt to the user's context. A product manager needs "why it matters for the product"; a researcher needs methodology and evidence quality; a student needs clear explanations of concepts.
 
 ## Decide Your Mode
 
@@ -69,6 +106,11 @@ lens index "<keyword>" --json             # Show entries for a keyword
 lens index add "<keyword>" <id> --json    # Register entry point (max 3 per keyword)
 lens index remove "<keyword>" [id] --json # Remove keyword or single entry
 
+# Config
+lens config list --json                   # Show all config
+lens config get context.role --json       # Get a specific field
+lens config set context.role "PM" --json  # Set a field
+
 # System
 lens rebuild-index --json                 # Rebuild SQLite cache from markdown files
 ```
@@ -95,6 +137,10 @@ printf '%s' '{"command":"search","positional":["query text"]}' | lens --stdin
 
 # Fetch with flags
 printf '%s' '{"command":"fetch","positional":["https://..."],"flags":{"save":true}}' | lens --stdin
+
+# Config (read/write user context)
+printf '%s' '{"command":"config","input":{"action":"list"}}' | lens --stdin
+printf '%s' '{"command":"config","input":{"action":"set","key":"context.role","value":"PM"}}' | lens --stdin
 ```
 
 Envelope format: `{"command":"...", "positional":[], "flags":{}, "input":{}}`
@@ -422,7 +468,9 @@ lens search "exact note title" --resolve --json
 
 This does case-insensitive exact title matching first, then falls back to FTS5. Returns `{id, title}` on unique match, or `{error: {code: "ambiguous_match", candidates: [...]}}` if multiple matches. Use this before writing to avoid duplicates.
 
-**Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter.
+**Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter. Supports standard markdown including code blocks (Mermaid, etc.); rendering depends on the viewer.
+
+**Inline references in body**: Use `[[note_ID]]`, `[[src_ID]]`, or `[[task_ID]]` to reference other objects. Same ID format as `links[].to`. On read, `lens show --json` returns body unchanged plus `body_refs: [{id, title}]` with resolved titles.
 
 For full field reference, read [references/note-fields.md](references/note-fields.md).
 
@@ -435,6 +483,7 @@ Common multi-step workflows:
 2. `lens search "key concepts" --json` → find related notes
 3. `lens show <id> --json` → read related notes, follow forward_links
 4. `lens write --file batch.json --json` → create notes with links
+5. Check if any existing structure note should index these new notes → update it with `indexes` links
 
 **Explore a topic** (Index → Walk):
 1. `lens index "topic" --json` → get entry point note
