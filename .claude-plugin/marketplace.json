@@ -13,7 +13,7 @@
       "description": "Store, query, and link knowledge in a persistent knowledge graph",
       "source": "./plugin",
       "category": "productivity",
-      "version": "0.8.2"
+      "version": "0.8.3"
     }
   ]
 }
