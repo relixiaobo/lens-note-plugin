@@ -38,6 +38,6 @@ Spawn a background Agent with the following instruction (substitute actual `<sou
 >
 > **Plain language only.** Each note title is one clear claim. The body is evidence, context, or the reason the tension exists — written like you're explaining it to a friend, not summarizing an article.
 >
-> Do not extract notes mechanically — one per paragraph, one per idea from the article. Only write what's genuinely new or interesting when it meets the existing graph. Zero notes is a valid outcome if the article mostly confirms what's already there.
+> Do not extract notes mechanically — one per paragraph, one per idea from the article. Only write what's genuinely new or interesting when it meets the existing graph. Zero notes is a valid outcome if the article mostly confirms what's already there. Do not create tasks — that's for the user to do explicitly.
 
 Do not wait for the background agent to complete.

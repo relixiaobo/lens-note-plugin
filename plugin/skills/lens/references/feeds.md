@@ -9,10 +9,10 @@ lens feed check --json     → list of new articles (title + URL)
         ↓
 lens fetch <url> --save    → save each as Source (cheap: HTTP + extraction)
         ↓
-SCENT scan                 → score each Source against the graph
+read + assess              → is this worth compiling?
         ↓
-High score → compile       → Collision Method → Notes
-Low score  → skip (Source stays for future reference)
+Worth it  → compile        → Collision Method → Notes
+Not worth → skip (Source stays for future reference)
 ```
 
 Fetching is cheap. Compilation is expensive. The decision point is "compile or not", not "fetch or not".
@@ -55,7 +55,7 @@ lens feed check --json
 # (for each article URL from step 1)
 lens fetch "https://example.com/article" --save --json
 
-# 3. Read the Source, scan for SCENT
+# 3. Read the Source, decide if it's worth compiling
 lens show src_01ABC --json
 # → Read the body. Note key claims and concepts.
 
