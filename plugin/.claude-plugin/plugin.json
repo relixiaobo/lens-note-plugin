@@ -1,6 +1,6 @@
 {
   "name": "lens",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Knowledge graph for agents. Store, query, and link structured knowledge across sessions.",
   "author": {
     "name": "relixiaobo",
