@@ -35,7 +35,8 @@ Tana exports one large JSON file. Categories by tag:
 | Node with 2+ children | Note (reflection) |
 | Short standalone node | Skip |
 
-The raw format is complex (docs + datoms + tuple types). Use the pre-built parser:
+The raw format is complex (docs + datoms + tuple types). Use the pre-built parser
+(located in the lens project root — run from the lens repo directory):
 
 ```bash
 npx tsx spike/tana-clean.ts <export.json> /tmp/tana-clean.jsonl
@@ -45,7 +46,8 @@ Output: one JSON object per line — `{title, body, tana_id, category, word_coun
 
 ### Roam Research (EDN backup)
 
-Roam stores a Datascript database as EDN. Use the pre-built parser:
+Roam stores a Datascript database as EDN. Use the pre-built parser
+(located in the lens project root — run from the lens repo directory):
 
 ```bash
 npx tsx spike/roam-clean.ts <backup.edn> /tmp/roam-clean.jsonl
@@ -57,10 +59,15 @@ Skip `daily` notes unless `word_count > 100` and the body contains a real claim.
 
 ### Obsidian / markdown files
 
-Plain markdown — no parser needed. Read directly:
+Plain markdown — no parser needed. Read directly. Supports both a single `.md` file
+and a vault directory:
 
 ```bash
-ls <vault-directory>/*.md
+# Single file
+cat <file.md>
+
+# Vault directory (recursive — Obsidian vaults have subfolders)
+find <vault-directory> -name '*.md' -type f
 ```
 
 Filter heuristics:
@@ -85,9 +92,12 @@ For each candidate, ask:
 
 2. **Is it distinct?** Does lens already have this?
    ```bash
+   # First: exact title match
+   lens search "exact note title" --resolve --json
+   # Then: keyword search for similar territory
    lens search "key terms from the note" --json
    ```
-   If 3+ existing notes already cover this territory → skip or merge.
+   If exact title match found → skip (duplicate). If 3+ existing notes cover this territory → skip or merge.
 
 3. **Is it worth colliding?** Would this change, challenge, or refine something already in the graph?
    — Contradicts an existing note → import, add `contradicts` link after writing.
@@ -106,13 +116,20 @@ For each candidate, ask:
 
 ## Writing the Batch
 
-Collect approved items into a JSON array file:
+**URL-backed sources go through `lens fetch`, not `lens write`:**
+
+```bash
+# Sources with URLs — fetch extracts and normalizes the content
+lens fetch "https://example.com/article" --save --json
+```
+
+**Everything else goes through batch write:**
 
 ```json
 [
   {"type": "note", "title": "Complexity is the enemy of reliability", "body": "Evidence from..."},
   {"type": "note", "title": "Another insight", "body": "..."},
-  {"type": "source", "title": "Article title", "url": "https://...", "source_type": "web_article"}
+  {"type": "source", "title": "Manual source without URL", "source_type": "manual_note"}
 ]
 ```
 
@@ -120,6 +137,11 @@ Submit:
 ```bash
 lens write --file /tmp/import-batch.json --json
 ```
+
+**Check results.** Batch writes are partial-success — some items may fail while others
+succeed. Always inspect the `{results:[...]}` output. If any item has `"action":"error"`,
+investigate before continuing. Do not re-run the entire batch (this creates duplicates);
+retry only failed items.
 
 **Keep batches under 50 items.** For larger imports, pause between batches:
 ```bash

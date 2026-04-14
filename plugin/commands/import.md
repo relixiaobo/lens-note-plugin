@@ -16,18 +16,19 @@ Determine what you're working with:
 2. Detect the format:
    - `.json` with `docs` array → **Tana export**
    - `.edn` → **Roam Research backup**
-   - `.md` files (folder) → **Obsidian vault**
+   - `.md` (single file) → **Plain markdown** (read directly)
+   - Directory with `.md` files → **Obsidian vault** (use recursive glob `**/*.md`)
    - `.jsonl` → **Pre-cleaned JSONL** (skip to Step 3)
-   - `.csv` / `.txt` / other → **Generic** (write a small cleaning script)
+   - `.csv` / `.txt` / other → **Generic** (write a JS/TS cleaning script, run via `npx tsx`)
 3. Report to the user: format detected, file size, rough item count
 
 ## Step 2 — Clean
 
 Parse the raw format into `{title, body}` pairs. Use pre-built parsers when available:
 
-- **Tana**: `npx tsx spike/tana-clean.ts "$ARGUMENTS" /tmp/tana-clean.jsonl`
-- **Roam**: `npx tsx spike/roam-clean.ts "$ARGUMENTS" /tmp/roam-clean.jsonl`
-- **Obsidian**: Read `.md` files directly — no parser needed. Apply the filter heuristics from import.md.
+- **Tana**: `npx tsx spike/tana-clean.ts "$ARGUMENTS" /tmp/tana-clean.jsonl` (spike scripts are in the lens project root — run from the lens repo directory, or use the absolute path)
+- **Roam**: `npx tsx spike/roam-clean.ts "$ARGUMENTS" /tmp/roam-clean.jsonl` (same — in lens project root)
+- **Obsidian**: Read `.md` files directly — no parser needed. Use recursive glob for vault directories. Apply the filter heuristics from import.md.
 - **Generic**: Write a small cleaning script to produce JSONL with `{title, body}` per line.
 
 ## Step 3 — Preview
@@ -48,7 +49,7 @@ Wait for user confirmation before continuing.
 For each candidate, apply the decision framework from import.md:
 
 1. **Is it a claim?** Does the title state something specific?
-2. **Is it distinct?** `lens search "key terms" --json` — skip if 3+ existing notes cover this.
+2. **Is it distinct?** First check exact title: `lens search "title" --resolve --json`. If match found → skip. Then keyword search: `lens search "key terms" --json` — skip if 3+ existing notes cover this.
 3. **Is it worth colliding?** Would this change or refine something already in the graph?
 
 Work in chunks of ~20 candidates. For each chunk, present a summary:
@@ -58,11 +59,19 @@ Work in chunks of ~20 candidates. For each chunk, present a summary:
 
 ## Step 5 — Write
 
-Collect approved items into a JSON array file. Keep batches under 50 items.
+Present the final list to the user and ask for confirmation before writing anything.
 
+**URL-backed sources go through `lens fetch`** (not batch write):
+```bash
+lens fetch "<url>" --save --json
+```
+
+**Everything else** — collect into a JSON array file. Keep batches under 50 items:
 ```bash
 lens write --file /tmp/import-batch-N.json --json
 ```
+
+**Check results after each batch.** Batch writes are partial-success. Inspect `{results:[...]}` — if any item has `"action":"error"`, investigate and retry only failed items. Do not re-run the entire batch.
 
 Between batches, check for duplicates introduced so far:
 ```bash
