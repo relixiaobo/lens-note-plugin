@@ -40,14 +40,14 @@ lens show <orphan_id> --json
 lens search "keywords from the note" --json
 ```
 
-### 3. Decide the relationship
+### 4. Decide the relationship
 
 - **supports**: this note strengthens another note's claim
 - **contradicts**: this note conflicts with another (auto-bidirectional)
 - **refines**: this note is a more precise version of another
 - **related**: weak association — use sparingly, only when the relationship is real but doesn't fit the above types
 
-### 4. Add the link (only if justified)
+### 5. Add the link (only if justified)
 
 ```bash
 printf '%s' '{"command":"write","input":{"type":"link","from":"orphan_id","rel":"supports","to":"target_id"}}' | lens --stdin
@@ -80,15 +80,79 @@ printf '%s' '{"command":"write","input":{"type":"delete","id":"note_DUPLICATE"}}
 printf '%s' '{"command":"write","input":{"type":"update","id":"note_OLD","body":"**Superseded** by note_NEW.","add":{"links":[{"to":"note_NEW","rel":"related","reason":"superseded by newer understanding"}]}}}' | lens --stdin
 ```
 
-## Structure Notes
+## Structure Notes and the Keyword Index
 
-Structure notes are sparse index entry points. Create them in the body using links. Rules:
+Two complementary navigation tools — don't confuse them:
+
+- **Structure note**: a regular note whose body links to 3–8 entry-point notes on a topic. It can carry context and reasoning in the body. Created manually after a cluster forms naturally.
+- **Keyword index** (`lens index`): a sparse registry mapping a keyword string to 1–3 note IDs. No body, no reasoning — just a pointer. Used for quick navigation entry across the whole graph.
+
+Use them together: the keyword index gets you into a cluster; the structure note shows the cluster's shape.
+
+Rules for structure notes:
 
 - Create them only AFTER a cluster of related notes has formed naturally
-- Link to 3-8 entry-point notes via `links[]`
+- Link to 3–8 entry-point notes via `links[]`
 - They are navigational aids, not categories
 - Most knowledge graphs need very few structure notes
 - Never create one per article or per topic automatically
+
+### Dense Note Audit
+
+A note with more than 8 forward links is worth inspecting — not automatically wrong, but suspicious. Ask: can you articulate in one sentence why each specific link exists? If not, the link is noise.
+
+```bash
+lens show <id> --json    # count forward_links.length
+```
+
+Common causes and fixes:
+
+- **Compilation linked everything to one "hub" note** → remove links you can't justify
+- **One note doing two separate jobs** → split it; connect the two halves with `refines` or `related`
+
+A carefully curated structure note with 8 links is fine. A compilation note with 15 loose `related` links is not.
+
+## After Bulk Compilation
+
+After creating 5+ notes from a single source, do a brief audit before moving on.
+
+### 1. Check for lateral connections
+
+Read each new note. Do any of them collide with each other — not just with the source? Notes linked only to a source form a star topology, not a graph.
+
+```bash
+lens show <note_id> --json    # read each new note, check forward_links
+```
+
+Add note-to-note links where a genuine collision happened. If none do, that's fine — not every batch produces note-to-note edges.
+
+### 2. Check for near-duplicates
+
+```bash
+lens similar --all --threshold 0.8 --json    # high-confidence duplicates only
+```
+
+If two new notes are near-duplicates (similarity > 0.8), merge them: update the better one with any unique content, then delete the weaker one.
+
+### 3. Dense note check
+
+For each new note, check `forward_links.length`. Anything above 8 → apply the Dense Note Audit above.
+
+## Dead Link Cleanup
+
+A dead link is a forward link in a note's `links[]` that points to an ID that no longer exists. The CLI cleans SQLite when a note is deleted, but it does not update the YAML frontmatter of notes that link to it. Dead links persist in frontmatter and reappear in SQLite after `rebuild-index`.
+
+**Symptom**: `lens show note_A --json` shows a forward link to `note_B`, but `lens show note_B --json` returns a not-found error.
+
+**Fix**: explicitly unlink the dead reference:
+
+```bash
+printf '%s' '{"command":"write","input":{"type":"unlink","from":"note_A","rel":"supports","to":"note_B"}}' | lens --stdin
+```
+
+Then run `lens rebuild-index --json` to resync SQLite with the cleaned frontmatter.
+
+Note: if you don't know the `rel` type of the dead link, check `lens show note_A --json` — the `forward_links` array includes the `rel` field even for dead links (it's read from YAML).
 
 ## Anti-Patterns
 
