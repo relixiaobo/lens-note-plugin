@@ -10,12 +10,12 @@ The user wants to know what they think about: $ARGUMENTS
 2. Assemble full context: `lens context "$ARGUMENTS" --json`
 3. For any notes with `contradicts` links, read both sides: `lens show <id> --json`
 
-Do not output a list of notes. Synthesize instead:
+Do not output a list of notes. Write like a smart friend who has read all the user's notes and is giving them a straight answer. Plain language, short sentences. No academic framing.
 
-**Your position on [topic]:** One paragraph capturing what the user actually thinks — their conclusion, their confidence, the nuance. Write in second person ("You think...", "Your view is..."). Ground every claim in specific notes (cite by ID).
+**Your take on [topic]:** What does the user actually think? One paragraph, second person ("You think...", "Your position is..."). Be specific — not "you've explored this" but "you think X because Y." Cite note IDs as evidence.
 
-**The live tension:** If contradicting notes exist, state the conflict directly in plain language. What does the user believe on each side? Why hasn't it resolved? Is one side stronger?
+**The unresolved bit:** If contradicting notes exist, say what the conflict is in plain terms. Which side is stronger? Why hasn't it settled?
 
-**Open edges:** 1–2 seeds or unresolved threads on this topic — not just "these notes have no links" but "this idea hasn't found its place yet — it might be the most interesting one."
+**The loose end:** 1–2 ideas on this topic that haven't connected to anything yet — and why they might matter.
 
 If no notes exist on this topic, say so plainly. Do not fabricate a position.

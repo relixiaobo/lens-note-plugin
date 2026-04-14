@@ -11,7 +11,9 @@ Run in order:
 2. `lens tasks --json`
 3. `lens list notes --orphans --limit 5 --json`
 
-**Lead with one observation.** Before any lists, synthesize: what is the single most significant pattern, tension, or open question from this period? One sentence, direct. This sets the frame for everything below.
+Write like you're catching up with a friend after a week away. Plain language, no academic framing. Say what you actually see.
+
+**Lead with one observation.** Before any lists: what's the most interesting thing that happened in the user's thinking this period? One sentence, direct. Not "the knowledge graph shows increased connectivity" — something real, like "you've been circling around X and haven't landed yet."
 
 Then present:
 
