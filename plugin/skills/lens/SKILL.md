@@ -30,6 +30,7 @@ When lens is relevant, identify the mode before acting:
 | "who is X" / "enrich" / "add background" | **Enrich** | Build entity card (person/work/concept) with your knowledge. |
 | "check feeds" / "what's new" / RSS processing | **Feed** | Read [references/feeds.md](references/feeds.md) first. |
 | "where do I start with X" / navigation | **Index** | Use keyword index as entry point, then follow links. |
+| "import from Roam/Tana/Obsidian" / migration | **Import** | Read [references/import.md](references/import.md) first. |
 | User didn't mention lens, but topic is relevant | **Proactive** | Quick search. Mention relevant notes + open tasks naturally. |
 
 ## Commands

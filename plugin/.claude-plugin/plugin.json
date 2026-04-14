@@ -1,6 +1,6 @@
 {
   "name": "lens",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "description": "Knowledge graph for agents. Store, query, and link structured knowledge across sessions.",
   "author": {
     "name": "relixiaobo",
@@ -12,6 +12,7 @@
   "keywords": ["knowledge", "zettelkasten", "notes", "graph", "memory", "agent"],
   "skills": "./skills/",
   "commands": [
+    "./commands/import.md",
     "./commands/recall.md",
     "./commands/review.md",
     "./commands/save.md"
