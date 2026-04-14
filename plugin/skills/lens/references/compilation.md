@@ -84,7 +84,7 @@ The body is free-form markdown. Use it for everything beyond the title:
 - **Scope**: mention if it's a big-picture principle or supporting detail
 - **Perspective/frames**: describe what this view sees and what it ignores. Frames are among the most valuable notes — they don't add facts, they change how you interpret facts.
 - **Questions**: pose open questions naturally
-- **Inline references**: mention other note IDs in prose
+- **Inline references**: use `[[note_ID]]` to reference other notes (resolved to titles on read)
 
 ## Process for Deep Compilation (Articles)
 

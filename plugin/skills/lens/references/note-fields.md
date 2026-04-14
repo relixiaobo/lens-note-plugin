@@ -31,6 +31,7 @@ Each link has:
 | `contradicts` | Conflicts with the target note | Yes |
 | `refines` | More precise version of the target | No |
 | `related` | Loose association (use sparingly) | No |
+| `indexes` | MOC/index entry point (index → child) | No |
 
 ## Body (markdown after frontmatter)
 
@@ -40,9 +41,11 @@ Everything that isn't the title goes in the body:
 - **Scope**: mention if it's a big-picture principle or supporting detail
 - **Perspective**: describe what this view sees and ignores
 - **Questions**: pose open questions in the body text
-- **Inline references**: mention other note IDs naturally in prose
+- **Inline references**: use `[[note_ID]]` to reference other notes in prose (same ID as `links[].to`)
 
 The body is free-form markdown. No required structure. Write naturally.
+
+**Inline reference convention**: When referencing another note in body text, use `[[note_ID]]` — e.g., `[[note_01ABC]]`. On read (`lens show`, `lens context`), this is resolved to `[Title](note_01ABC)` with the current title. It is for readability only and does not create a graph edge. To create an actual connection, add an entry to `links[]`.
 
 ## Source Fields
 

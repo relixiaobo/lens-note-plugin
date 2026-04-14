@@ -46,6 +46,7 @@ lens search "keywords from the note" --json
 - **contradicts**: this note conflicts with another (auto-bidirectional)
 - **refines**: this note is a more precise version of another
 - **related**: weak association — use sparingly, only when the relationship is real but doesn't fit the above types
+- **indexes**: this note organizes/indexes the target note (for MOC/structure notes)
 
 ### 5. Add the link (only if justified)
 
@@ -84,7 +85,7 @@ printf '%s' '{"command":"write","input":{"type":"update","id":"note_OLD","body":
 
 Two complementary navigation tools — don't confuse them:
 
-- **Structure note**: a regular note whose body links to 3–8 entry-point notes on a topic. It can carry context and reasoning in the body. Created manually after a cluster forms naturally.
+- **Structure note**: a regular note whose body uses `[[note_ID]]` to reference 3–8 entry-point notes on a topic, with `rel: "indexes"` in `links[]`. Created manually after a cluster forms naturally.
 - **Keyword index** (`lens index`): a sparse registry mapping a keyword string to 1–3 note IDs. No body, no reasoning — just a pointer. Used for quick navigation entry across the whole graph.
 
 Use them together: the keyword index gets you into a cluster; the structure note shows the cluster's shape.
@@ -92,7 +93,8 @@ Use them together: the keyword index gets you into a cluster; the structure note
 Rules for structure notes:
 
 - Create them only AFTER a cluster of related notes has formed naturally
-- Link to 3–8 entry-point notes via `links[]`
+- Link to child notes via `links[]` with `rel: "indexes"` — this distinguishes "organizes" from "semantically relates"
+- Use `[[note_ID]]` in the body for inline references (resolved to `[Title](ID)` on read)
 - They are navigational aids, not categories
 - Most knowledge graphs need very few structure notes
 - Never create one per article or per topic automatically

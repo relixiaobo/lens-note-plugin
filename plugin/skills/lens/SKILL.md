@@ -392,7 +392,7 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 [{...}, {...}]  // batch — $0/$1 reference earlier items' IDs
 ```
 
-Link types: supports, contradicts (auto-bidirectional), refines, related.
+Link types: supports, contradicts (auto-bidirectional), refines, related, indexes (MOC → child).
 
 **Links are idempotent.** Writing the same link twice returns `"action": "unchanged"`. Writing with a different reason returns `"action": "updated"`. No duplicates are ever created.
 
