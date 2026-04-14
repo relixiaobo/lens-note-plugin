@@ -30,7 +30,7 @@ lens show note_01ABC --json    # Read it. See its links.
 lens show note_01DEF --json    # Follow a link. What's here?
 ```
 
-This wandering is not aimless. You're carrying your thought through the graph, watching what happens when it meets different existing ideas. Luhmann called this "communicating with the slip-box" — the graph talks back.
+This wandering is not aimless. You're carrying your thought through the graph, watching what happens when it meets different existing ideas. The graph talks back.
 
 What to notice during collision:
 - **Agreement**: your thought strengthens something you already know
@@ -62,7 +62,7 @@ Sometimes you collide and nothing happens — the encounter is too surface-level
 
 **Drill down** — You have a "so what?" feeling. Keep asking: why is this true? What's underneath? What would break if this were false? Don't stop until you reach something solid.
 
-**Reduce** — Too many dimensions, too much complexity. What are the 2-3 truly independent axes? Everything else is a combination. Find the basis vectors.
+**Reduce** — Too many dimensions, too much complexity. Strip it down: what are the 2-3 things that actually matter? Everything else follows from those.
 
 **Debate** — Your thought and an existing note genuinely disagree. Don't smooth it over. Let both sides speak. The tension IS the insight. Write it as a `contradicts` link with your analysis of where the disagreement lives.
 

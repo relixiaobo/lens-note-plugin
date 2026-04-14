@@ -1,6 +1,6 @@
 # Feed Processing
 
-How to handle new articles from RSS feeds. Based on the SCENT framework from lens's [theoretical foundations](https://github.com/relixiaobo/lens-note/blob/main/docs/theoretical-foundations.md).
+How to handle new articles from RSS feeds. The key decision: is this worth compiling, or just saving?
 
 ## The Flow
 
@@ -17,23 +17,23 @@ Low score  → skip (Source stays for future reference)
 
 Fetching is cheap. Compilation is expensive. The decision point is "compile or not", not "fetch or not".
 
-## SCENT: Deciding What to Compile
+## Deciding What to Compile
 
-After fetching, read each Source and score it:
+After fetching, read each source and ask four questions:
 
-| Dimension | What to look for | How to check |
-|-----------|-----------------|--------------|
-| **S**urprise | Claims that contradict or complicate existing notes | `lens search "key claim from article"` — do results disagree? |
-| **C**onnection | Concepts that link to 2+ existing notes, or bridge separate clusters | `lens search` multiple key terms — do results span different topics? |
-| **E**fficiency | Dense content that compresses into concise insights | Is the article substantive or mostly filler? |
-| **N**ovelty | Terms or domains absent from the graph | `lens search "new concept"` — zero results means new territory |
+| Question | How to check |
+|----------|--------------|
+| Does it **surprise** you — contradict or complicate something you already think? | `lens search "key claim"` — do results disagree? |
+| Does it **connect** to 2+ existing notes, or bridge separate areas? | Search multiple key terms — do results span different topics? |
+| Is it **substantial** — dense enough to compress into real insights? | Is it substantive or mostly filler? |
+| Does it cover **new ground** you don't have yet? | `lens search "new concept"` — zero results means new territory |
 
 ### Decision
 
-- **S + C high** → Compile. This is where collision happens.
-- **Only E** (dense but covers ground you already have) → Skip.
-- **Only N** (novel topic, but nothing to connect to yet) → Note it as a seed. It may become valuable when related knowledge arrives later.
-- **Confirms existing notes** → Skip. Confirmation doesn't produce new knowledge.
+- **Surprise + Connection** → Compile. That's where the collision is.
+- **Just familiar ground presented well** → Skip. Confirmation doesn't produce new knowledge.
+- **Genuinely new topic but nothing to connect to yet** → Save as a seed. It may matter when related knowledge arrives.
+- **Confirms what you already know** → Skip.
 
 ## Compilation
 

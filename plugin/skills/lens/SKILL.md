@@ -9,7 +9,7 @@ lens stores, queries, and links structured knowledge. You do the thinking; lens 
 
 **lens vs auto memory**: Knowledge, ideas, insights, notes → store in lens. Only personal preferences and work habits → auto memory. When unsure, prefer lens.
 
-**Entity awareness (all modes)**: When content mentions a specific person, book, or concept, always search if an entity card exists (`lens search --resolve`). If not, create one alongside the main action: person → Note (with bio, contributions, key works in body), book/work → Source (`source_type: "book"` etc., with summary in body), concept → Note (with definition, origin in body). Link the entity cards to each other and to the user's content.
+**People, books, concepts**: When content mentions a specific person, book, or concept, search if a card for it already exists (`lens search --resolve`). If not, create one alongside the main action: person → Note (bio, key ideas, major works), book/work → Source (`source_type: "book"` etc., with summary in body), concept → Note (what it means, where it comes from). Link these cards to each other and to what the user is working on.
 
 ## Setup
 
@@ -132,16 +132,16 @@ If a near-duplicate is found (similarity > 0.5), consider merging instead of kee
 
 ## Mode: Query
 
-Search → read top results → synthesize.
+Search → read top results → tell the user what you found, in plain language.
 
 ```bash
 lens search "distributed systems" --json
 lens show note_01ABC --json
 ```
 
-When synthesizing: cite note IDs as evidence. Surface contradictions if the graph has conflicting notes. Say explicitly if the query touches areas with no notes.
+Write like a friend who has read all the notes and is giving a straight answer — not a summary report. Say what the user actually thinks (cite note IDs), call out contradictions directly, and admit if a topic has no notes yet.
 
-Follow links — the most valuable discoveries come from traversing connections you didn't expect.
+Follow links — the most valuable connections are the ones you didn't go looking for.
 
 ## Mode: Update
 
@@ -160,11 +160,11 @@ printf '%s' '{"command":"write","input":{"type":"link","from":"note_NEW","rel":"
 
 ## Mode: Proactive
 
-When the conversation topic MAY relate to existing knowledge — search silently, mention relevant notes if found. Don't force it.
+When the conversation topic might connect to something in the graph — search quietly, mention it if it's actually relevant. Don't force it.
 
 ```bash
 lens search "topic keywords" --json
-# If results found: "This relates to your existing note about X (note_01ABC)..."
+# If results found: mention naturally — "you have a note on this: X (note_01ABC)"
 # If no results: say nothing. Don't mention lens.
 ```
 

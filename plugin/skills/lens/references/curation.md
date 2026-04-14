@@ -1,6 +1,6 @@
-# Curation Methodology
+# Keeping the Graph Healthy
 
-How to maintain knowledge graph health. Based on Karpathy's "lint" concept and Luhmann's link discipline.
+How to maintain knowledge graph health — find orphans, make connections, clean up what's stale.
 
 ## When to Curate
 
