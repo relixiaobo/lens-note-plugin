@@ -28,6 +28,19 @@ lens has its own vocabulary — do NOT use terms from other knowledge management
 
 There is no "fleeting note" in lens. If a thought is worth storing, it's a Note. If it's not worth storing, don't write it.
 
+### Note title discipline
+
+Two kinds of notes require different title patterns:
+
+| Kind | When to use | Title pattern |
+|------|-------------|---------------|
+| **Observation** | Specific finding from one source/case | `[Source]: [what they do/say]` — e.g., "Manus sub-agent design: context isolation over role simulation" |
+| **Thesis** | Generalized claim you believe holds broadly | Direct assertion — e.g., "Context isolation is the core constraint in sub-agent design" |
+
+**Never promote an observation to a thesis in the title.** If Manus uses context isolation, the title should say "Manus uses X", not "X is the nature of multi-agent systems." Overstated thesis titles attract spurious `supports` links from anything on the same topic.
+
+If an observation has been confirmed by multiple independent sources, you may write a separate thesis note linking back to them with `supports`.
+
 ### Choosing link types (rel decision tree)
 
 When linking two notes, work through this order:
@@ -39,6 +52,33 @@ When linking two notes, work through this order:
 5. **None of the above?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
 
 **`related` is the last resort, not the default.** The CLI rejects `related` without a reason. Run `lens lint --json` to check graph health.
+
+### `supports` quality rule
+
+`supports` means: **this note provides specific evidence for the thesis in the target note.** It does NOT mean "both notes are about the same topic."
+
+Before creating a `supports` link, ask: *"How does [source] provide evidence for the specific claim in [target]?"* If the honest answer is "both mention multi-agent systems" or "both are about context", use `related` instead.
+
+**Red flags for a `supports` reason:**
+- "Protocol X and System Y architecture" — two topic labels joined with "and", no evidential explanation
+- "Article A and concept B" — structural label, not causal
+- Reason restates that both notes share a topic, without saying how one provides evidence for the other
+
+**Good `supports` reasons explain the mechanism:**
+- "Benchmark shows accuracy drops 37% when context exceeds 32k tokens, directly supporting the 'smaller context = clearer' claim"
+- "Case study confirms the thesis: each worker agent gets a clean context window with no shared state between runs"
+- "Counter-example: the Room+@mention architecture uses shared state — shows the principle is design-specific, not universal"
+
+### Post-import lint habit
+
+After any bulk import or reading session, always run:
+
+```bash
+lens lint --audit vague_reasons --json   # catch supports used as topic labels
+lens lint --json                         # check related_dominance and super_connectors
+```
+
+The `vague_reasons` audit now flags `supports` links whose reasons only describe topic proximity (pattern: "A与B" with no explanatory verb). These are the most common source of spurious hub notes.
 
 ## Setup
 
