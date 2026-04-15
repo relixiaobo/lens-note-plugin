@@ -77,11 +77,11 @@ Accepts ID or title (same auto-resolve as `show`). Shows all relationships for a
 
 ```json
 {"id": "note_01A",
- "forward": [{"id": "note_01B", "rel": "supports", "type": "note", "title": "Target title"}],
+ "forward": [{"id": "note_01B", "rel": "supports", "type": "note", "title": "Target title", "reason": "provides evidence for..."}],
  "backward": [{"id": "note_01C", "rel": "refines", "type": "note", "title": "Source title"}]}
 ```
 
-Only real graph edges (from `links[]` in YAML) appear here. The `source` metadata field is NOT included — use `show` to see a note's source.
+Only real graph edges (from `links[]` in YAML) appear here. Forward links include `reason` when present. The `source` metadata field is NOT included — use `show` to see a note's source.
 
 **Filters**: `--rel related` returns only related links. `--direction forward` returns only outgoing links. Combine both: `--rel related --direction forward`. Valid rels: supports, contradicts, refines, related, indexes. Valid directions: forward, backward.
 
@@ -310,7 +310,7 @@ Common multi-step workflows:
 
 ## Common Pitfalls
 
-1. **Link field naming varies by command.** `show` returns full `forward_links[]` and `backward_links[]` arrays (each item has `id`, `rel`, `title`). `links` returns `forward[]` and `backward[]` (filterable with `--rel` and `--direction`). `search`, `list`, and `digest` return `links` as a compact count or summary — use `show` to get full link details.
+1. **Link field naming varies by command.** `show` returns full `forward_links[]` and `backward_links[]` arrays (each item has `id`, `rel`, `reason`, `title`). `links` returns `forward[]` and `backward[]` (filterable with `--rel` and `--direction`; forward links include `reason`). `search`, `list`, and `digest` return `links` as a compact count or summary — use `show` or `links` to get full link details.
 
 2. **Never truncate note IDs.** IDs are exactly `prefix_` + 26 uppercase chars (ULID). `note_01KP2SFME1Z07MX` is too short and will be rejected. Always copy the full ID.
 
