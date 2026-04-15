@@ -15,7 +15,7 @@
 ## Links
 
 Each link has:
-- `to`: target note ID (required)
+- `to`: target object ID — any `note_`, `src_`, or `task_` prefix (required)
 - `rel`: relationship type (required)
 - `reason`: why this link exists (optional but recommended)
 
@@ -43,11 +43,11 @@ Everything that isn't the title goes in the body:
 - **Scope**: mention if it's a big-picture principle or supporting detail
 - **Perspective**: describe what this view sees and ignores
 - **Questions**: pose open questions in the body text
-- **Inline references**: use `[[note_ID]]` to reference other notes in prose (same ID as `links[].to`)
+- **Inline references**: use `[[note_ID]]`, `[[src_ID]]`, or `[[task_ID]]` to reference objects in prose
 
 The body is free-form markdown. No required structure. Write naturally.
 
-**Inline reference convention**: When referencing another note in body text, use `[[note_ID]]` — e.g., `[[note_01ABC]]`. On read (`lens show`, `lens context`), this is resolved to `[Title](note_01ABC)` with the current title. It is for readability only and does not create a graph edge. To create an actual connection, add an entry to `links[]`.
+**Inline reference convention**: Use `[[note_01ABC]]`, `[[src_01ABC]]`, or `[[task_01ABC]]` in body text. On read (`lens show`, `search --expand`), JSON output returns body unchanged plus `body_refs: [{id, title}]` with resolved titles. Text output resolves `[[ID]]` → `[Title](ID)` inline. This is for readability only — it does not create a graph edge. To create an actual connection, add an entry to `links[]`.
 
 ## Source Fields
 

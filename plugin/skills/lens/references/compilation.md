@@ -49,7 +49,7 @@ Crystallization takes many forms:
 | Genuinely new insight | Create a note with links to what it collided with |
 | Strengthened existing understanding | Update: add evidence to body, strengthen the claim |
 | Found a contradiction | Create a note with `contradicts` link. Explain the tension. |
-| Two old notes are actually the same | Merge: update the better one, delete the other |
+| Two old notes are actually the same | Merge: `write {"type":"merge","from":"dup","into":"keep"}` |
 | Old understanding superseded | Update body to mark as superseded, link to the newer note |
 | Multiple insights emerged | Multiple notes + links between them |
 | Nothing new after collision | Do nothing. This is a valid outcome. |

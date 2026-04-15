@@ -284,7 +284,7 @@ lens similar --all --threshold 0.8 --json  # only high-confidence duplicates
 - Single-note output: `{"id": "...", "count": N, "results": [{"id": "...", "title": "...", "similarity": 0.65}, ...]}`
 - `--all` output: `{"count": N, "groups": [{"notes": [...], "pairs": [{"a": "...", "b": "...", "similarity": 0.9}]}]}`
 
-If a near-duplicate is found (similarity > 0.5), consider merging instead of keeping both: update the existing note with new evidence and delete the new one.
+If a near-duplicate is found (similarity > 0.5), merge them: `lens write '{"type":"merge","from":"dup_id","into":"keep_id"}' --json`. This redirects links, appends body, and rewrites `[[ID]]` refs in one step.
 
 ## Mode: Query
 

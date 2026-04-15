@@ -28,9 +28,9 @@ printf '%s' '{"command":"write","input":{"type":"task","title":"Research MCP pro
 ## Checking Tasks
 
 ```bash
-lens tasks --json              # open tasks
-lens tasks --done --json       # completed tasks
-lens tasks --all --json        # everything
+lens list tasks --status open --json   # open tasks
+lens list tasks --status done --json   # completed tasks
+lens list tasks --json                 # all tasks
 ```
 
 When the conversation topic relates to an open task, mention it naturally: "This relates to your open task about X (task_01ABC)."
