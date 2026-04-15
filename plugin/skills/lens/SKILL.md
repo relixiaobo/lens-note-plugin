@@ -57,11 +57,11 @@ printf '%s' '{"command":"config","input":{"action":"set","key":"context.audience
 
 Read the user's context from `lens status --json` and adapt every note you write:
 
-**Role** — shapes what angle to emphasize:
-- product manager → why it matters for the product, user impact, strategic implications
-- researcher → methodology, evidence quality, limitations
-- engineer → implementation details, trade-offs, system design
-- student → clear explanations, connect to fundamentals
+**Role** — a description of who the user is, not a single label. People have multiple facets. Read the role as background context, then **infer the right angle from the content itself**:
+- Writing about product decisions? Emphasize user impact and strategic implications.
+- Writing about technical architecture? Emphasize trade-offs and design rationale.
+- Writing about personal experience? Emphasize reflection and transferable insight.
+- Writing about a concept or theory? Emphasize clarity and connections to other ideas.
 
 **Audience** — shapes the level of explanation:
 - self → no background needed, use shorthand and jargon freely, be direct
