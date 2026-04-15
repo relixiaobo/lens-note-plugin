@@ -4,10 +4,34 @@ Complete reference for lens read and write APIs, output formats, common workflow
 
 ## Contents
 
+- [JSON Envelope](#json-envelope)
 - [Read API — Output Formats](#read-api--output-formats)
 - [Write API Reference](#write-api-reference)
 - [Combining Commands](#combining-commands)
 - [Common Pitfalls](#common-pitfalls)
+
+---
+
+## JSON Envelope
+
+All `--json` output uses a stable envelope:
+
+```json
+// Success
+{"ok": true, "data": { ... payload ... }}
+
+// Error
+{"ok": false, "error": {"code": "command_error", "message": "..."}, "hint": "..."}
+
+// Deprecation
+{"ok": false, "error": {"code": "deprecated_command", "message": "..."}, "replacement": "..."}
+```
+
+Always check `ok` first. On success, read `data`. On failure, read `error.code` and `error.message`. Optional fields: `hint` (next action), `command` (which command failed), `candidates` (ambiguous match results).
+
+**Partial batch failure**: `{"ok": false, "error": {"code": "partial_failure", "message": "2 of 5 item(s) failed"}, "data": {"results": [...]}}` — individual results are still in `data.results`, each with its own `action` field.
+
+**All examples below show the `data` payload only** (the object inside `data`), not the full envelope.
 
 ---
 
@@ -28,14 +52,14 @@ Complete reference for lens read and write APIs, output formats, common workflow
 `--resolve` resolves a query to a single object ID using three fallback strategies:
 
 1. **ID match**: If the query looks like a valid ID (`note_`/`src_`/`task_` + 26 chars), returns it directly as `{id, title}`.
-2. **Title match**: Case-insensitive exact title search. Returns `{id, title}` on unique match, or `{error: {code: "ambiguous_match", candidates: [...]}}` if multiple notes share the title.
-3. **FTS5 ranked search**: Full-text search. Returns `{id, title}` if exactly one result, `{error: {code: "ambiguous_match", candidates: [...]}}` (top 5) if multiple, or `{error: {code: "no_match"}}` if zero.
+2. **Title match**: Case-insensitive exact title search. Returns `{id, title}` on unique match, or `{ok: false, error: {code: "ambiguous_match"}, candidates: [...]}` if multiple notes share the title.
+3. **FTS5 ranked search**: Full-text search. Returns `{id, title}` if exactly one result, `{ok: false, error: {code: "ambiguous_match"}, candidates: [...]}` (top 5) if multiple, or `{ok: false, error: {code: "no_match"}}` if zero.
 
 ### show
 
-Accepts ID or title. If the input is not a valid ID format, auto-resolves by exact title match → FTS5 search. If ambiguous, returns `{error: {code: "ambiguous_match", candidates: [...]}}`.
+Accepts ID or title. If the input is not a valid ID format, auto-resolves by exact title match → FTS5 search. If ambiguous, returns `{ok: false, error: {code: "ambiguous_match"}, candidates: [...]}`.
 
-**Batch mode**: `lens show id1 id2 id3 --json` returns `{"count": 3, "items": [{...}, {...}, {...}]}`.
+**Batch mode**: `lens show id1 id2 id3 --json` returns `{"count": 3, "items": [{...}, {...}, {...}]}` (inside `data`).
 
 Single object output:
 
@@ -213,7 +237,7 @@ Link types: supports, contradicts (auto-bidirectional), refines, related, indexe
 
 **Links are idempotent.** Writing the same link twice returns `"action": "unchanged"`. Writing with a different reason returns `"action": "updated"`. No duplicates are ever created.
 
-**Batch writes are partial-success.** If one item in a batch fails, the rest still process. Failed items and their dependents get `"action": "error"` with a message. Output uses `{results:[...]}` format with per-item `index`. Link/unlink results include `from`, `to`, `rel` fields.
+**Batch writes are partial-success.** If one item in a batch fails, the rest still process. Failed items and their dependents get `"action": "error"` with a message. The envelope returns `ok: false` with `error.code: "partial_failure"` and `data.results` containing per-item results. Link/unlink results include `from`, `to`, `rel` fields.
 
 ### Batch: creating notes with links (recommended pattern)
 
@@ -237,7 +261,7 @@ To check if a note already exists by exact title, use `--resolve`:
 lens search "exact note title" --resolve --json
 ```
 
-This does case-insensitive exact title matching first, then falls back to FTS5. Returns `{id, title}` on unique match, or `{error: {code: "ambiguous_match", candidates: [...]}}` if multiple matches. Use this before writing to avoid duplicates.
+This does case-insensitive exact title matching first, then falls back to FTS5. Returns `{ok: true, data: {id, title}}` on unique match, or `{ok: false, error: {code: "ambiguous_match"}, candidates: [...]}` if multiple matches. Use this before writing to avoid duplicates.
 
 **Body is free-form markdown.** Evidence, confidence, scope, perspective — all go in body, not frontmatter. Supports standard markdown including code blocks (Mermaid, etc.); rendering depends on the viewer.
 
@@ -292,8 +316,10 @@ Common multi-step workflows:
 
 4. **Curly quotes break JSON.** `"word"` (U+201C/U+201D) is not valid JSON. Use straight quotes `"word"`. When writing JSON files with special characters, use the Write tool — do not construct JSON strings by hand.
 
-5. **Error responses are JSON too.** When a command fails, stdout is `{"error": {"code": "...", "message": "..."}}`. Always check exit code or parse the response before assuming success.
+5. **All JSON output uses the envelope.** Success: `{"ok": true, "data": {...}}`. Errors: `{"ok": false, "error": {"code": "...", "message": "..."}}`. Always check `ok` before reading `data`.
 
 ## Errors
 
-`{"error": {"code": "...", "message": "...", "command": "..."}}`
+All errors follow the envelope: `{"ok": false, "error": {"code": "...", "message": "..."}, "hint": "...", "command": "..."}`
+
+Error codes: `command_error` (general), `deprecated_command`, `unknown_command`, `ambiguous_match`, `no_match`, `partial_failure` (batch), `invalid_request`, `empty_stdin`, `no_input`.

@@ -378,6 +378,7 @@ For output formats (read API), write API, batch patterns, common workflows, and 
 
 Key points to remember without loading the reference:
 
+- **All JSON output uses an envelope**: success → `{ok: true, data: {...}}`, error → `{ok: false, error: {...}}`. Always check `ok` before reading `data`.
 - `show`, `links`, `similar` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
 - `show` supports batch: `lens show id1 id2 id3 --json` returns `{count, items}`.
 - `show` returns full `forward_links[]` and `backward_links[]` arrays. `links` returns `forward[]` and `backward[]`.
