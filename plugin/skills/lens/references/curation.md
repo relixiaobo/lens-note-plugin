@@ -52,11 +52,17 @@ lens search "keywords from the note" --json
 
 ### 4. Decide the relationship
 
-- **supports**: this note strengthens another note's claim
-- **contradicts**: this note conflicts with another (auto-bidirectional)
-- **refines**: this note is a more precise version of another
-- **related**: weak association — use sparingly, only when the relationship is real but doesn't fit the above types
-- **indexes**: this note organizes/indexes the target note (for MOC/structure notes)
+Work through this decision tree in order:
+
+1. **Does A oppose or challenge B?** → `contradicts` (auto-bidirectional)
+2. **Is A a more specific version, concrete implementation, or case study of B?** → `refines`
+3. **Does A strengthen, provide evidence for, or validate B?** → `supports`
+4. **Is A an index/MOC entry organizing B?** → `indexes`
+5. **None of the above, but genuinely connected?** → `related` (must provide a reason explaining HOW — "related to same topic" is not enough)
+
+`related` requires a `reason` field. If you cannot articulate the relationship direction, the link is probably not worth creating.
+
+Run `lens lint --json` to check graph health — it flags related dominance, missing reasons, and super-connectors.
 
 ### 5. Add the link (only if justified)
 

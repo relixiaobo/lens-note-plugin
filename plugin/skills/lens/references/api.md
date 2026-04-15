@@ -202,7 +202,7 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 [{...}, {...}]  // batch — $0/$1 reference earlier items' IDs
 ```
 
-Link types: supports, contradicts (auto-bidirectional), refines, related, indexes (MOC → child).
+Link types: supports, contradicts (auto-bidirectional), refines, related, indexes (MOC → child). **`related` requires a `reason` field** — the CLI rejects related links without one. Prefer precise rels (contradicts → refines → supports) over related.
 
 **Links are idempotent.** Writing the same link twice returns `"action": "unchanged"`. Writing with a different reason returns `"action": "updated"`. No duplicates are ever created.
 
@@ -216,7 +216,7 @@ Link types: supports, contradicts (auto-bidirectional), refines, related, indexe
 [
   {"type": "note", "title": "First insight", "body": "..."},
   {"type": "note", "title": "Second insight", "body": "...", "links": [{"to": "$0", "rel": "supports", "reason": "builds on first"}]},
-  {"type": "note", "title": "Third insight", "body": "...", "links": [{"to": "$0", "rel": "refines"}, {"to": "$1", "rel": "related"}]}
+  {"type": "note", "title": "Third insight", "body": "...", "links": [{"to": "$0", "rel": "refines"}, {"to": "$1", "rel": "related", "reason": "both explore the same design tradeoff"}]}
 ]
 ```
 

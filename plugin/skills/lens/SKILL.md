@@ -28,6 +28,18 @@ lens has its own vocabulary — do NOT use terms from other knowledge management
 
 There is no "fleeting note" in lens. If a thought is worth storing, it's a Note. If it's not worth storing, don't write it.
 
+### Choosing link types (rel decision tree)
+
+When linking two notes, work through this order:
+
+1. **A opposes B?** → `contradicts` (most valuable — tensions are where knowledge grows)
+2. **A is a concrete version/implementation/case of B?** → `refines`
+3. **A strengthens or provides evidence for B?** → `supports`
+4. **A indexes/organizes B?** → `indexes`
+5. **None of the above?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
+
+**`related` is the last resort, not the default.** The CLI rejects `related` without a reason. Run `lens lint --json` to check graph health.
+
 ## Setup
 
 Check: `which lens`. If missing: `npm install -g lens-note && lens init`

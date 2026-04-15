@@ -30,8 +30,10 @@ Each link has:
 | `supports` | Strengthens the target note | No |
 | `contradicts` | Conflicts with the target note | Yes |
 | `refines` | More precise version of the target | No |
-| `related` | Loose association (use sparingly) | No |
+| `related` | Loose association — **requires reason** (use as last resort) | No |
 | `indexes` | MOC/index entry point (index → child) | No |
+
+**Choosing a rel:** Try `contradicts` → `refines` → `supports` → `indexes` first. Only use `related` when none fit, and always provide a `reason` that explains HOW (not just topic overlap). `related` without a reason is rejected by the CLI.
 
 ## Body (markdown after frontmatter)
 
