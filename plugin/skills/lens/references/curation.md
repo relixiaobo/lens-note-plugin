@@ -85,20 +85,46 @@ printf '%s' '{"command":"write","input":{"type":"unlink","from":"note_A","rel":"
 
 ## Link Quality Audit
 
-Use `links --rel` to review links by type. `related` links are the weakest — many can be upgraded to `supports`, `refines`, or `contradicts`.
+### Per-note audit
+
+Use `links --rel` to review links by type on a single note. Forward links include `reason`, so you can assess without follow-up `show` calls:
 
 ```bash
-# Find all related links on a note
 lens links <id> --rel related --direction forward --json
-
-# Read the targets to understand the actual relationship
-lens show <target1> <target2> --json
-
-# Upgrade: atomic retype (1 step instead of unlink+link)
-printf '%s' '{"command":"write","input":{"type":"retype","from":"note_A","to":"note_B","old_rel":"related","new_rel":"supports","reason":"A provides evidence for B"}}' | lens --stdin
 ```
 
-`retype` handles bidirectional invariants: leaving `contradicts` removes the reverse link; entering `contradicts` creates it.
+### Graph-wide audit
+
+Use `lint --audit` to export ALL offenders for a check with full context. Process the list, decide new rels, and batch retype:
+
+```bash
+# Step 1: Get all related links with titles and reasons
+lens lint --audit related_dominance --json
+
+# Step 2: Review offenders, generate batch retype
+# (agent processes the list and decides supports/refines/keep)
+
+# Step 3: Batch retype
+printf '%s' '{"command":"write","input":[
+  {"type":"retype","from":"note_A","to":"note_B","old_rel":"related","new_rel":"supports"},
+  {"type":"retype","from":"note_C","to":"note_D","old_rel":"related","new_rel":"refines"}
+]}' | lens --stdin
+
+# Step 4: Verify
+lens lint --json
+```
+
+`retype` inherits the existing reason when none is specified — no data loss on rel changes. It also handles bidirectional invariants: leaving `contradicts` removes the reverse link; entering `contradicts` creates it.
+
+### Rel strength for duplicate cleanup
+
+When `duplicate_links` reports a pair with multiple rels, keep the strongest: `indexes`/`contradicts` > `refines` > `supports` > `related`. `lint --audit duplicate_links` suggests which to keep.
+
+### Reason requirements
+
+- `related`: **required** (CLI rejects without one)
+- `supports`, `contradicts`, `refines`: recommended (lint checks)
+- `indexes`: **exempt** (structural link, self-explanatory — MOC→child navigation)
 
 ## Merge and Supersede
 

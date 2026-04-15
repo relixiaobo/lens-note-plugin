@@ -197,6 +197,7 @@ lens similar <id|title> --json            # Find near-duplicates (+ --threshold)
 lens similar --all --json                 # Scan all notes, group duplicates
 lens digest [week|month|year] --json      # Recent insights grouped by type
 lens lint --json                          # Graph quality checks (9 checks) with offender IDs
+lens lint --audit <check> --json          # Full offender export with context for batch fixing
 lens lint --check --json                  # Same + exit code 1 on failures (for CI)
 lens lint --summary --json                # Stats + graph health + user context
 
@@ -387,8 +388,10 @@ Key points to remember without loading the reference:
 - `search --expand` returns full note bodies — use it for synthesis. Plain `search` returns titles only — use it for finding.
 - `list tasks --status open` replaces the old `tasks` command. `list notes --min-links 10` finds hub notes.
 - `lint --summary` replaces the old `status` command (includes user context).
-- Write operations include `retype` (atomic link type change) and `merge` (atomic note merge with link redirect and [[ID]] rewrite).
+- Write operations include `retype` (atomic link type change, inherits reason if not specified) and `merge` (atomic note merge with link redirect and [[ID]] rewrite).
 - Batch writes use `$0`/`$1` to reference earlier items' IDs.
 - Links are idempotent. `contradicts` is auto-bidirectional.
+- `lint --audit <check>` returns all offenders with full context (titles, reasons) for batch fixing. Available checks: related_dominance, missing_reasons, vague_reasons, duplicate_links, thin_notes, superseded_alive.
+- `indexes` links are exempt from reason requirements (structural, not semantic).
 - Never truncate IDs. Always copy the full `prefix_` + 26-char ULID.
 - Curly quotes break JSON — use straight quotes only.

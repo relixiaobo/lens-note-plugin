@@ -136,10 +136,44 @@ Full quality report with 9 checks and offender IDs. Checks: `related_dominance`,
 
 Use `--check` for CI: exit code 1 on failures (warnings don't fail).
 
+Note: `indexes` links are exempt from `missing_reasons` and `vague_reasons` checks (structural links are self-explanatory; only semantic links need reasons).
+
 ```json
 {"checks": [{"name": "related_dominance", "status": "ok", "value": 45.2, "threshold": 50, "message": "..."}],
  "summary": {"total_checks": 9, "passed": 8, "warnings": 1, "failures": 0}}
 ```
+
+### lint --audit \<check\>
+
+Deep-dive mode: returns ALL offenders for one check with full context (titles, reasons), for batch fixing. Supports `--limit`/`--offset`.
+
+```bash
+lens lint --audit related_dominance --json
+lens lint --audit duplicate_links --json
+lens lint --audit missing_reasons --limit 20 --json
+```
+
+Output varies by check type:
+
+**Edge-shaped** (related_dominance, missing_reasons, vague_reasons):
+```json
+{"check": "related_dominance", "total_links": 1556, "count": 1556,
+ "offenders": [{"from": "note_01A", "from_title": "...", "to": "note_01B", "to_title": "...", "rel": "related", "reason": "..."}]}
+```
+
+**Pair-shaped** (duplicate_links — includes keep/remove suggestion by rel strength):
+```json
+{"check": "duplicate_links", "total_pairs": 5,
+ "offenders": [{"from": "note_01A", "from_title": "...", "to": "note_01B", "to_title": "...", "rels": ["refines","supports"], "keep": "refines", "remove": ["supports"]}]}
+```
+
+**Note-shaped** (thin_notes, superseded_alive):
+```json
+{"check": "superseded_alive", "total_notes": 2,
+ "offenders": [{"id": "note_01A", "title": "...", "active_inbound": [{"from": "note_01B", "rel": "supports"}]}]}
+```
+
+**Workflow**: `lint` → identify failing check → `lint --audit <check>` → agent processes offenders → `write` batch retype/unlink → `lint` verify.
 
 ### lint --summary
 
@@ -235,9 +269,11 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 [{...}, {...}]  // batch — $0/$1 reference earlier items' IDs
 ```
 
-Link types: supports, contradicts (auto-bidirectional), refines, related, indexes (MOC → child). **`related` requires a `reason` field** — the CLI rejects related links without one. Prefer precise rels (contradicts → refines → supports) over related.
+Link types: supports, contradicts (auto-bidirectional), refines, related, indexes (MOC → child). **`related` requires a `reason` field** — the CLI rejects related links without one. **`indexes` is exempt from reason requirements** (structural link). Prefer precise rels (contradicts → refines → supports) over related.
 
 **Links are idempotent.** Writing the same link twice returns `"action": "unchanged"`. Writing with a different reason returns `"action": "updated"`. No duplicates are ever created.
+
+**`retype` inherits reason.** When retyping without specifying a new reason, the existing reason is carried forward — no data loss on rel changes.
 
 **Batch writes are partial-success.** If one item in a batch fails, the rest still process. Failed items and their dependents get `"action": "error"` with a message. The envelope returns `ok: false` with `error.code: "partial_failure"` and `data.results` containing per-item results. Link/unlink results include `from`, `to`, `rel` fields.
 
