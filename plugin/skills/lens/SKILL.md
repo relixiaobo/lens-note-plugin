@@ -53,7 +53,32 @@ printf '%s' '{"command":"config","input":{"action":"set","key":"context.role","v
 printf '%s' '{"command":"config","input":{"action":"set","key":"context.audience","value":"engineering team"}}' | lens --stdin
 ```
 
-When writing notes, adapt to the user's context. A product manager needs "why it matters for the product"; a researcher needs methodology and evidence quality; a student needs clear explanations of concepts.
+### How to apply context when writing notes
+
+Read the user's context from `lens status --json` and adapt every note you write:
+
+**Role** — shapes what angle to emphasize:
+- product manager → why it matters for the product, user impact, strategic implications
+- researcher → methodology, evidence quality, limitations
+- engineer → implementation details, trade-offs, system design
+- student → clear explanations, connect to fundamentals
+
+**Audience** — shapes the level of explanation:
+- self → no background needed, use shorthand and jargon freely, be direct
+- team → explain cross-domain concepts, define non-obvious terms
+- public → explain all terminology, provide full context
+
+**Language** — shapes what language to write in:
+- Write titles and body in the specified language
+- Follow any specific rules the user provides (e.g., "keep technical terms in English")
+- When quoting foreign-language sources, preserve the original in blockquotes
+
+**Style** — the user's own writing principle. Apply it literally as a guide for every note. Common patterns:
+- "future usefulness" → write why, not what; record decision context and reasoning; emphasize counter-intuitive findings; avoid time-sensitive content
+- "be concise" → short sentences, no filler, one point per paragraph
+- "explain implications" → always end with "so what" — what follows from this insight
+
+If any context field is not set, use sensible defaults (explain moderately, write in English, balanced style).
 
 ## Decide Your Mode
 
