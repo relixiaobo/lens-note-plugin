@@ -137,8 +137,8 @@ When you search and find notes for the user, show:
 # Search & Read
 lens search "<query>" --json              # Full-text search (Unicode/CJK-aware)
 lens search "<query>" --resolve --json    # Resolve title → ID (exact match first)
-lens show <id> --json                     # Read one object with body + links
-lens links <id> --json                    # Show all relationships (forward + backward)
+lens show <id|title> --json                # Read one object with body + links
+lens links <id|title> --json              # Show all relationships (forward + backward)
 lens context "<query>" --json             # Assemble full context pack for a topic
 
 # Write
@@ -153,7 +153,7 @@ lens list sources --json                  # List all sources
 lens tasks [--all|--done] --json          # List tasks (default: open only)
 
 # Analyze
-lens similar <id> --json                  # Find near-duplicates (+ --threshold)
+lens similar <id|title> --json             # Find near-duplicates (+ --threshold)
 lens similar --all --json                 # Scan all notes, group duplicates
 lens digest [week|month|year] --json      # Recent insights grouped by type
 lens digest --days 3 --json               # Last N days
@@ -338,6 +338,7 @@ For output formats (read API), write API, batch patterns, common workflows, and 
 
 Key points to remember without loading the reference:
 
+- `show`, `links`, `similar` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
 - `show` returns full `forward_links[]` and `backward_links[]` arrays. `links` returns `forward[]` and `backward[]`.
 - `search`, `list`, `digest` return compact `links: N` (count only) — use `show` for full link details.
 - `search` and `list` support `--limit N` and `--offset N` for pagination.

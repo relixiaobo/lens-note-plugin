@@ -33,6 +33,8 @@ Complete reference for lens read and write APIs, output formats, common workflow
 
 ### show
 
+Accepts ID or title. If the input is not a valid ID format, auto-resolves by exact title match → FTS5 search. If ambiguous, returns `{error: {code: "ambiguous_match", candidates: [...]}}`.
+
 Returns full object with body and links as top-level arrays:
 
 ```json
@@ -45,7 +47,7 @@ Returns full object with body and links as top-level arrays:
 
 ### links
 
-Shows all relationships for an object:
+Accepts ID or title (same auto-resolve as `show`). Shows all relationships for an object:
 
 ```json
 {"id": "note_01A",
