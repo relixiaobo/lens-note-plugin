@@ -196,7 +196,8 @@ lens list tasks --status open --json      # Tasks by status (open/done)
 lens similar <id|title> --json            # Find near-duplicates (+ --threshold)
 lens similar --all --json                 # Scan all notes, group duplicates
 lens digest [week|month|year] --json      # Recent insights grouped by type
-lens lint --json                          # Graph quality checks with offender IDs
+lens lint --json                          # Graph quality checks (9 checks) with offender IDs
+lens lint --check --json                  # Same + exit code 1 on failures (for CI)
 lens lint --summary --json                # Stats + graph health + user context
 
 # Index (Schlagwortregister)

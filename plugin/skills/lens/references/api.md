@@ -132,11 +132,13 @@ Accepts `week`/`month`/`year` or `--days N` (default: 1 day). Use to review rece
 
 ### lint
 
-Full quality report with offender IDs:
+Full quality report with 9 checks and offender IDs. Checks: `related_dominance`, `contradicts_count`, `super_connectors`, `missing_reasons`, `vague_reasons`, `duplicate_links`, `dead_links`, `thin_notes`, `superseded_alive`.
+
+Use `--check` for CI: exit code 1 on failures (warnings don't fail).
 
 ```json
 {"checks": [{"name": "related_dominance", "status": "ok", "value": 45.2, "threshold": 50, "message": "..."}],
- "summary": {"total_checks": 6, "passed": 5, "warnings": 1, "failures": 0}}
+ "summary": {"total_checks": 9, "passed": 8, "warnings": 1, "failures": 0}}
 ```
 
 ### lint --summary

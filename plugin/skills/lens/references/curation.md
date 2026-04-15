@@ -63,7 +63,7 @@ Work through this decision tree in order:
 
 `related` requires a `reason` field. If you cannot articulate the relationship direction, the link is probably not worth creating.
 
-Run `lens lint --json` to check graph health — it flags related dominance, missing reasons, and super-connectors.
+Run `lens lint --json` to check graph health — 9 checks including related dominance, missing/vague reasons, thin notes, superseded-but-referenced notes, super-connectors, duplicate links, and dead links. Use `lens lint --check --json` for CI (exit code 1 on failures).
 
 ### 5. Add the link (only if justified)
 
