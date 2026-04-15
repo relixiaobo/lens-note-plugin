@@ -15,7 +15,7 @@ How to maintain knowledge graph health — find orphans, make connections, clean
 ## When to Curate
 
 - User explicitly asks ("clean up my notes", "fix orphans")
-- `lens status --json` shows high orphan rate (>10%)
+- `lens lint --summary --json` shows high orphan rate (>10%)
 - After a batch of compilations, as a follow-up pass
 
 ## Process
@@ -23,10 +23,11 @@ How to maintain knowledge graph health — find orphans, make connections, clean
 ### 1. Check health
 
 ```bash
-lens status --json
+lens lint --summary --json    # quick stats + orphan count
+lens lint --json              # full quality report with offender IDs
 ```
 
-Look at `connectivity.orphan_count`. Orphans are notes with zero links to other notes. Note: `status` only reports the count — use `lens list notes --orphans --json` to get actual orphan IDs and previews.
+Look at `connectivity.orphan_count`. Orphans are notes with zero links to other notes. Use `lens list notes --orphans --json` to get actual orphan IDs.
 
 ### 2. Get orphan details
 
@@ -82,14 +83,39 @@ printf '%s' '{"command":"write","input":{"type":"unlink","from":"note_A","rel":"
 
 `unlink` requires all three fields: `from`, `to`, `rel`. For `contradicts` links, the reverse direction is also removed automatically.
 
-## Merge and Supersede
+## Link Quality Audit
 
-**Merge**: when two notes say essentially the same thing, keep the better one. Update it with any unique content from the other. Delete the duplicate.
+Use `links --rel` to review links by type. `related` links are the weakest — many can be upgraded to `supports`, `refines`, or `contradicts`.
 
 ```bash
-printf '%s' '{"command":"write","input":{"type":"update","id":"note_KEEP","body":"merged body..."}}' | lens --stdin
-printf '%s' '{"command":"write","input":{"type":"delete","id":"note_DUPLICATE"}}' | lens --stdin
+# Find all related links on a note
+lens links <id> --rel related --direction forward --json
+
+# Read the targets to understand the actual relationship
+lens show <target1> <target2> --json
+
+# Upgrade: atomic retype (1 step instead of unlink+link)
+printf '%s' '{"command":"write","input":{"type":"retype","from":"note_A","to":"note_B","old_rel":"related","new_rel":"supports","reason":"A provides evidence for B"}}' | lens --stdin
 ```
+
+`retype` handles bidirectional invariants: leaving `contradicts` removes the reverse link; entering `contradicts` creates it.
+
+## Merge and Supersede
+
+**Merge**: when two notes say essentially the same thing, use atomic merge. It redirects all inbound links, carries forward links, appends body, and rewrites `[[ID]]` references across the graph — all in one step.
+
+```bash
+# Find duplicates
+lens similar <id> --json
+
+# Compare content
+lens show <dup_a> <dup_b> --json
+
+# Merge (deletes source, redirects links, appends body)
+printf '%s' '{"command":"write","input":{"type":"merge","from":"note_DUPLICATE","into":"note_KEEP"}}' | lens --stdin
+```
+
+Merge is idempotent — retrying after the source is deleted returns `"action": "unchanged"`. Only notes can be merged.
 
 **Supersede**: when understanding has evolved and an old note is no longer accurate. Don't delete — update the body to note it's superseded, and link to the newer note.
 
@@ -150,7 +176,7 @@ Add note-to-note links where a genuine collision happened. If none do, that's fi
 lens similar --all --threshold 0.8 --json    # high-confidence duplicates only
 ```
 
-If two new notes are near-duplicates (similarity > 0.8), merge them: update the better one with any unique content, then delete the weaker one.
+If two new notes are near-duplicates (similarity > 0.8), merge them with `{"type":"merge","from":"weaker","into":"better"}`.
 
 ### 3. Dense note check
 

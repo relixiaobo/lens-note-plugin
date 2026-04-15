@@ -49,7 +49,7 @@ Check: `which lens`. If missing: `npm install -g lens-note && lens init`
 Before first use, check if the user has configured their context:
 
 ```bash
-printf '%s' '{"command":"status"}' | lens --stdin    # look for "context" field
+printf '%s' '{"command":"lint","flags":{"summary":true}}' | lens --stdin    # look for "context" field
 ```
 
 If `context` is missing or empty, ask the user:
@@ -67,7 +67,7 @@ printf '%s' '{"command":"config","input":{"action":"set","key":"context.audience
 
 ### How to apply context when writing notes
 
-Read the user's context from `lens status --json` and adapt every note you write:
+Read the user's context from `lens lint --summary --json` and adapt every note you write:
 
 **Role** — a description of who the user is, not a single label. People have multiple facets. Read the role as background context, then **infer the right angle from the content itself**:
 - Writing about product decisions? Emphasize user impact and strategic implications.
@@ -104,7 +104,7 @@ When lens is relevant, identify the mode before acting:
 | "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
 | "this contradicts..." / records a contradiction | **Update** | Search the contradicting note → update or link. |
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
-| "what tasks" / "check tasks" / list open work | **Task list** | `lens tasks --json` → show open tasks. `lens tasks --all --json` for all. |
+| "what tasks" / "check tasks" / list open work | **Task list** | `lens list tasks --status open --json` → show open tasks. `lens list tasks --json` for all. |
 | "who is X" / "enrich" / "add background" | **Enrich** | Build entity card (person/work/concept) with your knowledge. |
 | "check feeds" / "what's new" / RSS processing | **Feed** | Read [references/feeds.md](references/feeds.md) first. |
 | "where do I start with X" / navigation | **Index** | Use keyword index as entry point, then follow links. |
@@ -174,27 +174,30 @@ When you search and find notes for the user, show:
 # Search & Read
 lens search "<query>" --json              # Full-text search (Unicode/CJK-aware)
 lens search "<query>" --resolve --json    # Resolve title → ID (exact match first)
-lens show <id|title> --json                # Read one object with body + links
-lens links <id|title> --json              # Show all relationships (forward + backward)
-lens context "<query>" --json             # Assemble full context pack for a topic
+lens search "<query>" --expand --json     # Search with full bodies + links
+lens show <id> [id2...] --json            # Show object(s) with body + links (batch supported)
+lens links <id> --json                    # All relationships (forward + backward)
+lens links <id> --rel related --json      # Filter by relationship type
+lens links <id> --direction forward --json # Only outgoing links
 
 # Write
-lens write --file <path> --json           # Write note/source/task/link/unlink/update/delete/batch
+lens write --file <path> --json           # Write note/source/task/link/unlink/update/delete/retype/merge/batch
 lens fetch <url> [--save] --json          # Extract web content (--save to create source)
 
 # Browse
 lens list notes --json                    # List all notes
 lens list notes --orphans --json          # List unlinked notes (+ --limit/--offset)
 lens list notes --since 7d --json         # List notes from last 7 days (7d/2w/1m/1y)
-lens list sources --json                  # List all sources
-lens tasks [--all|--done] --json          # List tasks (default: open only)
+lens list notes --min-links 10 --json     # Hub notes by link count
+lens list sources --source-type book --json # Filter by source type
+lens list tasks --status open --json      # Tasks by status (open/done)
 
 # Analyze
-lens similar <id|title> --json             # Find near-duplicates (+ --threshold)
+lens similar <id|title> --json            # Find near-duplicates (+ --threshold)
 lens similar --all --json                 # Scan all notes, group duplicates
 lens digest [week|month|year] --json      # Recent insights grouped by type
-lens digest --days 3 --json               # Last N days
-lens status --json                        # Stats + graph health
+lens lint --json                          # Graph quality checks with offender IDs
+lens lint --summary --json                # Stats + graph health + user context
 
 # Index (Schlagwortregister)
 lens index --json                         # List all keyword entry points
@@ -376,10 +379,13 @@ For output formats (read API), write API, batch patterns, common workflows, and 
 Key points to remember without loading the reference:
 
 - `show`, `links`, `similar` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
+- `show` supports batch: `lens show id1 id2 id3 --json` returns `{count, items}`.
 - `show` returns full `forward_links[]` and `backward_links[]` arrays. `links` returns `forward[]` and `backward[]`.
-- `search`, `list`, `digest` return compact `links: N` (count only) — use `show` for full link details.
-- `search` and `list` support `--limit N` and `--offset N` for pagination.
-- `context` returns full note bodies — use it for synthesis. `search` returns titles only — use it for finding.
+- `links --rel related` filters by type. `links --direction forward` filters by direction. Combine both.
+- `search --expand` returns full note bodies — use it for synthesis. Plain `search` returns titles only — use it for finding.
+- `list tasks --status open` replaces the old `tasks` command. `list notes --min-links 10` finds hub notes.
+- `lint --summary` replaces the old `status` command (includes user context).
+- Write operations include `retype` (atomic link type change) and `merge` (atomic note merge with link redirect and [[ID]] rewrite).
 - Batch writes use `$0`/`$1` to reference earlier items' IDs.
 - Links are idempotent. `contradicts` is auto-bidirectional.
 - Never truncate IDs. Always copy the full `prefix_` + 26-char ULID.

@@ -35,7 +35,9 @@ Complete reference for lens read and write APIs, output formats, common workflow
 
 Accepts ID or title. If the input is not a valid ID format, auto-resolves by exact title match → FTS5 search. If ambiguous, returns `{error: {code: "ambiguous_match", candidates: [...]}}`.
 
-Returns full object with body and links as top-level arrays:
+**Batch mode**: `lens show id1 id2 id3 --json` returns `{"count": 3, "items": [{...}, {...}, {...}]}`.
+
+Single object output:
 
 ```json
 {"id": "note_01A", "type": "note", "title": "...", "body": "...",
@@ -57,6 +59,8 @@ Accepts ID or title (same auto-resolve as `show`). Shows all relationships for a
 
 Only real graph edges (from `links[]` in YAML) appear here. The `source` metadata field is NOT included — use `show` to see a note's source.
 
+**Filters**: `--rel related` returns only related links. `--direction forward` returns only outgoing links. Combine both: `--rel related --direction forward`. Valid rels: supports, contradicts, refines, related, indexes. Valid directions: forward, backward.
+
 Use `links` to explore the graph — follow connections to discover related knowledge.
 
 ### list
@@ -73,11 +77,11 @@ Use `links` to explore the graph — follow connections to discover related know
 
 With `--orphans`: `{"type": "notes", "filter": "orphans", "count": 5, "items": [{"id": "...", "title": "...", "preview": "..."}]}`
 
-Flags: `--since 7d` (time filter: `Nd`/`Nw`/`Nm`/`Ny`), `--orphans` (notes only), `--limit N`, `--offset N`.
+Flags: `--since 7d` (time filter: `Nd`/`Nw`/`Nm`/`Ny`), `--orphans` (notes only), `--min-links N` / `--max-links N` (total link count), `--source-type <type>` (sources only), `--status open|done` (tasks only), `--limit N`, `--offset N`.
 
-### context
+### search --expand
 
-Assembles a context pack with full note bodies. Use `context` when you need to **synthesize** across multiple notes (e.g., answering "what do I know about X"). Use `search` when you just need to **find** matching notes by title/keyword.
+Use `search --expand` when you need to **synthesize** across multiple notes (e.g., answering "what do I know about X"). Use plain `search` when you just need to **find** matching notes by title/keyword.
 
 ```json
 {"query": "...", "timestamp": "...", "total_results": 5,
@@ -85,7 +89,7 @@ Assembles a context pack with full note bodies. Use `context` when you need to *
             "body_refs": [{"id": "note_01B", "title": "Referenced note"}]}]}
 ```
 
-`body_refs` is optional — only included when the body contains `[[ID]]` inline references. Always returns JSON (no `--json` flag needed). Only includes notes, not sources or tasks.
+`body_refs` is optional — only included when the body contains `[[ID]]` inline references. Only includes notes, not sources or tasks.
 
 ### digest
 
@@ -102,17 +106,26 @@ Each note's `links` is a compact summary: `count` (total) and `rels` (breakdown 
 
 Accepts `week`/`month`/`year` or `--days N` (default: 1 day). Use to review recent work and spot contradictions worth exploring.
 
-### status
+### lint
+
+Full quality report with offender IDs:
 
 ```json
-{"path": "/Users/.../.lens", "notes": 903, "sources": 99,
- "tasks": {"open": 2, "done": 0, "total": 2}, "total": 1004,
- "connectivity": {"orphan_count": 4, "orphan_rate": 0.4, "total_links": 2874, "cross_source_pct": 0},
- "link_types": {"related": 2457, "supports": 279, "refines": 136, "contradicts": 2},
- "context": {"role": "PM", "audience": "engineering team"}}
+{"checks": [{"name": "related_dominance", "status": "ok", "value": 45.2, "threshold": 50, "message": "..."}],
+ "summary": {"total_checks": 6, "passed": 5, "warnings": 1, "failures": 0}}
 ```
 
-`context` is optional — only included when the user has configured their context via `lens config set context.*`.
+### lint --summary
+
+Quick stats + graph health + user context (replaces `status`):
+
+```json
+{"path": "/Users/.../.lens", "notes": 900, "sources": 105,
+ "tasks": {"open": 7, "done": 0, "total": 7}, "total": 1012,
+ "connectivity": {"orphan_count": 4, "orphan_rate": 0.4, "total_links": 2424, "cross_source_pct": 2.0},
+ "link_types": {"related": 1651, "supports": 451, "refines": 200, "contradicts": 16, "indexes": 110},
+ "context": {"role": "...", "audience": "...", "language": "...", "style": "..."}}
+```
 
 ### fetch
 
@@ -121,14 +134,6 @@ Extracts web content as clean markdown. With `--save`, also creates a source obj
 ```json
 {"title": "Article Title", "author": "Author Name", "url": "https://...",
  "word_count": 2718, "markdown": "# Article...", "source_id": "src_01A (only with --save)"}
-```
-
-### tasks
-
-Shortcut for listing tasks. `tasks` = open only, `tasks --all` = all, `tasks --done` = done only.
-
-```json
-{"type": "tasks", "count": 2, "items": [{"id": "task_01A", "title": "...", "status": "open"}]}
 ```
 
 ### note (shortcut)
@@ -197,7 +202,9 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 {"type": "task", "title": "...", "status": "open"}
 {"type": "link", "from": "note_A", "rel": "supports", "to": "note_B", "reason": "..."}
 {"type": "unlink", "from": "note_A", "rel": "supports", "to": "note_B"}
-{"type": "update", "id": "note_A", "set": {"title": "..."}, "add": {"links": [...]}, "body": "..."}
+{"type": "retype", "from": "note_A", "to": "note_B", "old_rel": "related", "new_rel": "supports", "reason": "..."}
+{"type": "merge", "from": "note_B", "into": "note_A"}
+{"type": "update", "id": "note_A", "set": {"title": "...", "body": "..."}, "add": {"links": [...]}}
 {"type": "delete", "id": "note_A"}
 [{...}, {...}]  // batch — $0/$1 reference earlier items' IDs
 ```
@@ -259,9 +266,13 @@ Common multi-step workflows:
 
 **Dedup after batch import**:
 1. `lens similar --all --threshold 0.8 --json` → find duplicate groups
-2. For each group: `lens show <id> --json` → compare content
-3. `lens write '{"type":"update","id":"keep_id","body":"merged"}' --json` → merge
-4. `lens write '{"type":"delete","id":"dup_id"}' --json` → remove duplicate
+2. For each group: `lens show <id1> <id2> --json` → compare content
+3. `lens write '{"type":"merge","from":"dup_id","into":"keep_id"}' --json` → atomic merge (redirects links, appends body, rewrites [[ID]] refs)
+
+**Link quality audit**:
+1. `lens links <id> --rel related --json` → see all related links
+2. `lens show <target1> <target2> --json` → compare targets
+3. `lens write '{"type":"retype","from":"...","to":"...","old_rel":"related","new_rel":"supports","reason":"..."}' --json` → upgrade link type
 
 **Review recent work**:
 1. `lens digest week --json` → see tensions/connected/seeds
@@ -273,7 +284,7 @@ Common multi-step workflows:
 
 ## Common Pitfalls
 
-1. **Link field naming varies by command.** `show` returns full `forward_links[]` and `backward_links[]` arrays (each item has `id`, `rel`, `title`). `links` returns `forward[]` and `backward[]`. `search`, `list`, and `digest` return `links` as a compact count or summary — use `show` to get full link details.
+1. **Link field naming varies by command.** `show` returns full `forward_links[]` and `backward_links[]` arrays (each item has `id`, `rel`, `title`). `links` returns `forward[]` and `backward[]` (filterable with `--rel` and `--direction`). `search`, `list`, and `digest` return `links` as a compact count or summary — use `show` to get full link details.
 
 2. **Never truncate note IDs.** IDs are exactly `prefix_` + 26 uppercase chars (ULID). `note_01KP2SFME1Z07MX` is too short and will be rejected. Always copy the full ID.
 
