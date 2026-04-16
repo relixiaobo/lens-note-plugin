@@ -280,6 +280,48 @@ Link types: supports, contradicts (auto-bidirectional), refines, related, indexe
 
 **Batch writes are partial-success.** If one item in a batch fails, the rest still process. Failed items and their dependents get `"action": "error"` with a message. The envelope returns `ok: false` with `error.code: "partial_failure"` and `data.results` containing per-item results. Link/unlink results include `from`, `to`, `rel` fields.
 
+**Hub advisory (single write):** When a `{"type": "link"}` write causes the target note to exceed 20 inbound links, the response includes an `advisory` object. (Only `type: "link"` writes emit advisories — inline `links[]` on `note`/`task`/`update` writes do not. For coverage, use the Pass 1 / Pass 2 pattern: create notes with source links only, then add inter-note links via explicit `link` writes.)
+
+```json
+{
+  "action": "created", "type": "link",
+  "advisory": {
+    "warning_code": "approaching_super_connector",
+    "target_id": "note_01KP2T2SQ0RHMSYZJ84DTP8JEJ",
+    "target_inbound_count": 22,
+    "soft_threshold": 20,
+    "hard_threshold": 30,
+    "rel_breakdown": {"supports": 18, "refines": 3, "related": 1},
+    "is_healthy_hub": false,
+    "message": "Target has 22 inbound links (18 supports, 0 indexes)."
+  }
+}
+```
+
+The advisory reports facts; how to respond is the caller's decision. `is_healthy_hub` is `true` only when the target has at least one `indexes` inbound link AND `indexes >= supports` — i.e., it functions as a structural index. If `true`, no action needed. If `false`, apply chain topology before linking more notes: create a thematic L2 synthesis note, redirect new notes to L2 (`supports`), L2 `refines` target. See [compilation.md](compilation.md#cluster-check) for the Cluster Check rule.
+
+**Batch hub warnings:** In batch mode with `link` items, advisories are surfaced as a deduplicated `warnings[]` array at the top level (not per-item), keyed by `target_id`, showing the peak inbound count observed during the batch:
+
+```json
+{
+  "results": [...],
+  "warnings": [
+    {
+      "warning_code": "approaching_super_connector",
+      "target_id": "note_01KP2T2SQ0RHMSYZJ84DTP8JEJ",
+      "target_inbound_count": 25,
+      "soft_threshold": 20,
+      "hard_threshold": 30,
+      "rel_breakdown": {"supports": 20, "refines": 5},
+      "is_healthy_hub": false,
+      "message": "Target has 25 inbound links (20 supports, 0 indexes)."
+    }
+  ]
+}
+```
+
+Check `warnings` after any batch that includes `{"type": "link"}` items. Inline `links[]` on note/task/update items do not contribute to `warnings[]`.
+
 ### Batch: creating notes with links (recommended pattern)
 
 **Use inline `links[]` on notes** to create notes and links in a single batch. This is simpler than separate `link` items because the note already knows its own ID:
@@ -344,6 +386,14 @@ Common multi-step workflows:
 2. For tensions: `lens show <id> --json` → investigate contradictions
 3. For seeds: `lens search "keywords" --json` → find connections
 4. `lens write '{"type":"link",...}' --json` → connect orphans
+
+**Hub overflow repair** (when `super_connectors` lint warns or batch `warnings[]` fires):
+1. `lens links <hub_id> --direction backward --json` → see all inbound links with rel types
+2. Identify thematic clusters in inbound notes (e.g., product quotes vs. management quotes)
+3. Create L2 synthesis notes for each cluster: `{"type":"note","title":"Sub-topic synthesis","body":"..."}`
+4. Redirect each cluster's notes: `{"type":"unlink",...}` + `{"type":"link","rel":"supports","to":"L2_id",...}`
+5. Link L2 nodes to master: `{"type":"link","from":"L2_id","rel":"refines","to":"hub_id",...}`
+6. Verify: `lens lint --json` — `super_connectors` check should clear
 
 ---
 

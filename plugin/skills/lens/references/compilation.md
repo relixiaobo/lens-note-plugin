@@ -42,6 +42,26 @@ What to notice during collision:
 
 Write what emerged from the collision. Not what the article said. Not what you already knew. The NEW understanding that neither had alone.
 
+**Cluster Check — before linking multiple notes to the same target:**
+
+If ≥ 3 notes from this session would link to the same existing target node, AND the target already has > 20 inbound links (check the `advisory` on a `{"type": "link"}` write response, or run `lens links <id> --direction backward --json` to count) — **pause before linking**. Track this yourself across your writes in the session; the CLI only warns at the individual link level.
+
+Ask: do these new notes share a thematic sub-focus that isn't already captured in the graph?
+
+| If yes — use chain topology | If no — link directly |
+|-----------------------------|----------------------|
+| Create an L2 synthesis note for the sub-focus | Each note evidences the target thesis directly — proceed |
+| New notes → `supports` → L2 | |
+| L2 → `refines` → master | |
+
+**Example:** reading a book on leadership generates 12 notes all targeting "Leadership and Decision-Making" — 8 are about how decisions get made under uncertainty, 4 about how leaders communicate rationale to teams. Create "Decision-Making Under Uncertainty" (L2), redirect the 8 decision notes there, L2 `refines` "Leadership and Decision-Making".
+
+**When to skip the L2:** target is a narrow specific thesis (≤ 15 inbound), or you can't name the sub-focus in a single phrase.
+
+**If the write response contains `advisory.warning_code == "approaching_super_connector"`:** check `advisory.is_healthy_hub`. If `false` and `advisory.target_inbound_count` is approaching 30 — apply chain topology for remaining links.
+
+---
+
 **Before linking, classify the collision:**
 
 | Collision type | What happened | Link to create |
@@ -129,3 +149,4 @@ This prevents the common failure mode of creating topic-proximity `supports` lin
 - **Smoothing over contradictions**: tension is insight. Don't resolve it prematurely.
 - **Pre-building structure**: structure notes are sparse post-hoc index entries, created after clusters form naturally. Never one per article.
 - **Linking during the writing pass**: for sessions producing many notes, creating inter-note links while writing risks topic-proximity `supports` links. Write first, connect after — you'll have full context in Pass 2.
+- **Star topology**: linking all new notes directly to one master synthesis node instead of creating thematic L2 nodes first. A write-time `advisory` fires at > 20 inbound (on `{"type": "link"}` writes); `lens lint` warns at > 30 (`super_connectors` check). A target is only a legitimate hub when `is_healthy_hub: true` — it has inbound `indexes` links and `indexes >= supports`. Otherwise apply chain topology (Cluster Check above) when multiple notes share a sub-focus.
