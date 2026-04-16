@@ -126,6 +126,68 @@ When `duplicate_links` reports a pair with multiple rels, keep the strongest: `i
 - `supports`, `contradicts`, `refines`: recommended (lint checks)
 - `indexes`: **exempt** (structural link, self-explanatory — MOC→child navigation)
 
+## Per-Target Supports Audit
+
+Graph-wide `lint --audit missing_reasons` / `vague_reasons` produces a flat list of offending edges. That's correct for bulk fixing, but many low-quality `supports` clusters are **target-shaped**, not edge-shaped: one thesis accumulates N unverified inbound because the original import built it by adjacency. Audit those thesis-by-thesis.
+
+### When to run
+
+- After any bulk import (Tana, Roam, Obsidian migration)
+- On every thesis you touch during Compile that has ≥ 5 inbound `supports`
+- When `lint --summary` shows `supports_density` unusually high and you suspect topic-proximity links are inflating it
+
+### Find candidates
+
+```bash
+# Thesis nodes with many inbound supports — audit targets, ranked by total link count
+lens list notes --min-links 8 --json
+
+# Scope the audit to one target — returns only links indicating this thesis with missing reasons
+lens lint --audit missing_reasons --target <thesis_id> --json
+
+# Or inspect inbound supports directly (reasons included in backward view as of v1.18):
+lens links <thesis_id> --rel supports --direction backward --json
+```
+
+### Decision tree — for each inbound supports with null or vague reason
+
+Read the source note's body. Then classify:
+
+| Test on source body vs target thesis | Action | CLI |
+|--------------------------------------|--------|-----|
+| Body presents specific evidence, mechanism, case, or counter-case for the target thesis (you can honestly write *"This proves the thesis because…"*) | **Keep + annotate.** `retype` same-rel with a real reason. | `{"type":"retype","from":"<src>","to":"<thesis>","old_rel":"supports","new_rel":"supports","reason":"<mechanism>"}` |
+| Body shares topic/domain but offers no mechanism (e.g. quote about the same person/field, no claim about the target's specific thesis) | **Downgrade to related.** Write a reason naming the topical connection honestly. | `{"type":"retype","from":"<src>","to":"<thesis>","old_rel":"supports","new_rel":"related","reason":"<shared topic>"}` |
+| Body is unrelated — link is pure import residue | **Unlink.** Source is a seed that will find its real connections elsewhere. | `{"type":"unlink","from":"<src>","rel":"supports","to":"<thesis>"}` |
+| Body actually *contradicts* the thesis | **Retype to contradicts.** Write a reason locating the tension. | `{"type":"retype","from":"<src>","to":"<thesis>","old_rel":"supports","new_rel":"contradicts","reason":"<tension>"}` |
+
+Batch the decisions and write in one shot:
+
+```bash
+printf '%s' '{"command":"write","input":[
+  {"type":"retype","from":"note_A","to":"note_T","old_rel":"supports","new_rel":"supports","reason":"body shows X directly proving thesis"},
+  {"type":"retype","from":"note_B","to":"note_T","old_rel":"supports","new_rel":"related","reason":"both discuss Y, no evidential link"},
+  {"type":"unlink","from":"note_C","rel":"supports","to":"note_T"},
+  {"type":"retype","from":"note_D","to":"note_T","old_rel":"supports","new_rel":"related","reason":"adjacent framing, no mechanism"}
+]}' | lens --stdin
+```
+
+### Heuristics — when you don't need to read every body
+
+Skim the source titles against the thesis first. A typical 9-inbound thesis splits roughly:
+- 1-2 real evidence (keep)
+- 3-5 topic proximity (downgrade to related)
+- 2-4 pure residue (unlink)
+
+If titles alone make the call obvious (e.g. an observational title "Iwata says X" supporting a thesis about decision-making, where X is about product, not decision-making), skip the body read.
+
+### Verify
+
+```bash
+lens links <thesis_id> --rel supports --direction backward --json   # remaining supports, all with real reasons
+lens lint --audit vague_reasons --json                              # should not list this thesis anymore
+lens lint --audit missing_reasons --target <thesis_id> --json       # should return 0 offenders
+```
+
 ## Merge and Supersede
 
 **Merge**: when two notes say essentially the same thing, use atomic merge. It redirects all inbound links, carries forward links, appends body, and rewrites `[[ID]]` references across the graph — all in one step.

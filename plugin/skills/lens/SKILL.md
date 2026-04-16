@@ -12,6 +12,8 @@ lens stores, queries, and links structured knowledge. You do the thinking; lens 
 
 **When in doubt, search.** If a note touches a topic that might already exist in the graph, run `lens search` before writing. This is how connections are discovered. Don't skip the search just because you're in a hurry — but don't search mechanically for every trivial capture either.
 
+**Before creating any synthesis node** (L2, thesis, or structure note), search the graph for existing nodes covering the same sub-focus, including disconnected ones. Use `lens search --expand` AND `lens list notes --max-links 2` — thesis nodes with no inbound `supports` are invisible to ordinary keyword search. See [references/compilation.md](references/compilation.md) Cluster Check Step 0.
+
 **People, books, concepts**: When content mentions a specific person, book, or concept, search if a card for it already exists (`lens search --resolve`). If not, create one alongside the main action: person → Note (bio, key ideas, major works), book/work → Source (`source_type: "book"` etc., with summary in body), concept → Note (what it means, where it comes from). Link these cards to each other and to what the user is working on.
 
 ## Terminology
@@ -94,6 +96,8 @@ lens lint --json                         # check supports_density and super_conn
 ```
 
 The `vague_reasons` audit now flags `supports` links whose reasons only describe topic proximity (pattern: "A与B" with no explanatory verb). These are the most common source of spurious hub notes.
+
+After `vague_reasons` reports offenders, do not just bulk-downgrade. For any offender thesis with ≥ 5 incoming offenders, shift to **per-target audit** — see [references/curation.md](references/curation.md) "Per-Target Supports Audit". A single under-examined thesis often collects the majority of an import's bad supports, and a per-target decision tree (keep-with-reason / downgrade / unlink / retype-to-contradicts) gives better outcomes than bulk edit.
 
 ## Setup
 
@@ -244,6 +248,7 @@ lens list notes --json                    # List all notes
 lens list notes --orphans --json          # List unlinked notes (+ --limit/--offset)
 lens list notes --since 7d --json         # List notes from last 7 days (7d/2w/1m/1y)
 lens list notes --min-links 10 --json     # Hub notes by link count
+lens list notes --max-links 2 --json      # Orphan-ish notes (useful for finding disconnected thesis nodes before creating synthesis)
 lens list sources --source-type book --json # Filter by source type
 lens list tasks --status open --json      # Tasks by status (open/done)
 

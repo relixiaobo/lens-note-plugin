@@ -48,15 +48,79 @@ If ≥ 3 notes from this session would link to the same existing target node, AN
 
 Ask: do these new notes share a thematic sub-focus that isn't already captured in the graph?
 
+### Step 0 — look for existing thesis homes
+
+Before creating any synthesis node (L2 or new thesis), run a two-part probe to see whether the sub-focus already has a home in the graph — even a disconnected one. Keyword search alone is not enough: thesis nodes with zero `supports` inbound rank poorly against quote-heavy corpora, and `lens links <master> --direction backward` only shows nodes already connected to master.
+
+Run all three, in this order:
+
+```bash
+# 1. Broad thematic probe — use --expand to see bodies, not just titles.
+lens search "<sub-focus keyword>" --expand --json
+
+# 2. Orphan-ish thesis scan — thesis nodes with few links are invisible to
+#    search ranking but still exist. Filter by title heuristic or just scan titles.
+lens list notes --max-links 2 --json
+
+# 3. Indexes-reachable scan — master may already organize a thesis on this sub-focus
+#    via indexes even if no supports connect it.
+lens links <master_id> --rel indexes --direction forward --json
+```
+
+Decision matrix based on what you find:
+
+| Probe result | Action |
+|--------------|--------|
+| Existing thesis matches the sub-focus exactly | **Reuse.** Redirect new notes → `supports` → existing thesis. Existing thesis → `refines` → master (create if missing). Do NOT create a parallel L2. |
+| Existing thesis is narrower than your sub-focus | **Nest.** Create the L2 as the broader synthesis. Existing thesis → `refines` → new L2 → `refines` → master. New notes attach at the right depth. |
+| Existing thesis is broader (your sub-focus is its specific case) | **Refine.** Your "new L2" is actually a refinement. Create it as a child: new L2 → `refines` → existing thesis. |
+| Nothing relevant in the graph | Proceed with the standard Cluster Check below. |
+
+**Rule**: a new L2 is the last resort. Reuse before restructure before create. The graph has a memory older than your session.
+
+### Standard Cluster Check
+
+If Step 0 found nothing, decide based on sub-focus:
+
 | If yes — use chain topology | If no — link directly |
 |-----------------------------|----------------------|
 | Create an L2 synthesis note for the sub-focus | Each note evidences the target thesis directly — proceed |
 | New notes → `supports` → L2 | |
 | L2 → `refines` → master | |
 
-**Example:** reading a book on leadership generates 12 notes all targeting "Leadership and Decision-Making" — 8 are about how decisions get made under uncertainty, 4 about how leaders communicate rationale to teams. Create "Decision-Making Under Uncertainty" (L2), redirect the 8 decision notes there, L2 `refines` "Leadership and Decision-Making".
+### Chain depth — N layers is normal, not an anti-pattern
 
-**When to skip the L2:** target is a narrow specific thesis (≤ 15 inbound), or you can't name the sub-focus in a single phrase.
+The `quote → L2 → master` pattern is the **minimum** chain, not the maximum. Real content often has natural sub-hierarchy. Follow the content, not a fixed layer count.
+
+**2-layer** (shallow — sub-focus has no internal structure):
+```
+quote → supports → L2 "Decision-Making Under Uncertainty" → refines → master "Leadership"
+```
+
+**3-layer** (sub-focus has an inner principle):
+```
+quote → supports → thesis "Decisions should minimize regret"
+                 → refines → L2 "Decision-Making Under Uncertainty"
+                 → refines → master "Leadership"
+```
+
+**4-layer** (two thesis levels — the inner is a concrete case of the outer):
+```
+quote → supports → thesis "Do fewer valuable things"
+                 → refines → thesis "Subtraction is the real creation"
+                 → refines → L2 "Product philosophy"
+                 → refines → master "Iwata Satoru"
+```
+
+**Rule for adding a layer**: the body of the lower node should explicitly justify the upper node's claim. If you can't say *"[lower] is a concrete case of [upper] because the body shows X"*, collapse the two into one layer.
+
+**When to skip a layer**: target is a narrow specific thesis (≤ 15 inbound) and the sub-focus can't be named in a single phrase. This applies at every depth, not just L2.
+
+**Anti-pattern: forced flattening.** If two thesis nodes naturally refine each other, do not pull them onto the same level to keep the chain shallow. Depth is cheap; loss of structure is expensive.
+
+**Anti-pattern: artificial deepening.** Do not invent a middle node just to lower a thesis's inbound count. The Cluster Check triggers on shared sub-focus, not on layer aesthetics.
+
+**Hub advisory fires at every level.** A thesis at depth 2 that accumulates 20+ `supports` inbound triggers `approaching_super_connector` just like a master. Apply Cluster Check recursively — a busy thesis gets its own L2 children.
 
 **If the write response contains `advisory.warning_code == "approaching_super_connector"`:** check `advisory.is_healthy_hub`. If `false` and `advisory.target_inbound_count` is approaching 30 — apply chain topology for remaining links.
 
@@ -150,3 +214,4 @@ This prevents the common failure mode of creating topic-proximity `supports` lin
 - **Pre-building structure**: structure notes are sparse post-hoc index entries, created after clusters form naturally. Never one per article.
 - **Linking during the writing pass**: for sessions producing many notes, creating inter-note links while writing risks topic-proximity `supports` links. Write first, connect after — you'll have full context in Pass 2.
 - **Star topology**: linking all new notes directly to one master synthesis node instead of creating thematic L2 nodes first. A write-time `advisory` fires at > 20 inbound (on `{"type": "link"}` writes); `lens lint` warns at > 30 (`super_connectors` check). A target is only a legitimate hub when `is_healthy_hub: true` — it has inbound `indexes` links and `indexes >= supports`. Otherwise apply chain topology (Cluster Check above) when multiple notes share a sub-focus.
+- **Parallel synthesis**: creating a new L2/thesis node when a disconnected one already exists in the graph. Bulk imports leave thesis nodes with zero `supports` inbound that keyword search ranks poorly — always run Cluster Check Step 0 (`lens list notes --max-links 2` + `lens links <master> --rel indexes`) before creating a synthesis node. Reuse before restructure before create.

@@ -145,15 +145,17 @@ Note: `indexes` links are exempt from `missing_reasons` and `vague_reasons` chec
 
 ### lint --audit \<check\>
 
-Deep-dive mode: returns ALL offenders for one check with full context (titles, reasons), for batch fixing. Supports `--limit`/`--offset`.
+Deep-dive mode: returns ALL offenders for one check with full context (titles, reasons), for batch fixing. Supports `--limit`/`--offset`. Edge-shaped audits (`supports_density`, `missing_reasons`, `vague_reasons`) also support `--target <id>` to scope results to links pointing AT a single node — useful for per-thesis audit.
 
 Available audit checks: `supports_density` (all supports links, for evidence backbone review), `related_dominance` (all related links, useful for curation — not a lint check, audit-only), `missing_reasons`, `vague_reasons`, `duplicate_links`, `thin_notes`, `superseded_alive`.
 
 ```bash
-lens lint --audit supports_density --json     # review evidence backbone
-lens lint --audit related_dominance --json    # find related links to cull or upgrade
+lens lint --audit supports_density --json                        # review evidence backbone (graph-wide)
+lens lint --audit related_dominance --json                       # find related links to cull or upgrade
 lens lint --audit duplicate_links --json
 lens lint --audit missing_reasons --limit 20 --json
+lens lint --audit missing_reasons --target <thesis_id> --json    # per-target scope (one thesis's inbound only)
+lens lint --audit vague_reasons --target <thesis_id> --json      # same for vague reasons
 ```
 
 Output varies by check type:
