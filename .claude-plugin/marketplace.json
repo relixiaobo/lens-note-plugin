@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "lens-note-plugin",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Knowledge graph for AI agents",
   "owner": {
     "name": "relixiaobo",
@@ -13,7 +13,7 @@
       "description": "Store, query, and link knowledge in a persistent knowledge graph",
       "source": "./plugin",
       "category": "productivity",
-      "version": "0.13.0"
+      "version": "0.13.1"
     }
   ]
 }
