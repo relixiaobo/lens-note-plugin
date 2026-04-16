@@ -250,6 +250,7 @@ lens list notes --since 7d --json         # List notes from last 7 days (7d/2w/1
 lens list notes --min-links 10 --json     # Hub notes by link count
 lens list notes --max-links 2 --json      # Orphan-ish notes (useful for finding disconnected thesis nodes before creating synthesis)
 lens list sources --source-type book --json # Filter by source type
+lens list sources --inbox --json          # Sources awaiting agent processing (set by clippers)
 lens list tasks --status open --json      # Tasks by status (open/done)
 
 # Analyze
