@@ -90,7 +90,7 @@ After any bulk import or reading session, always run:
 
 ```bash
 lens lint --audit vague_reasons --json   # catch supports used as topic labels
-lens lint --json                         # check related_dominance and super_connectors
+lens lint --json                         # check supports_density and super_connectors
 ```
 
 The `vague_reasons` audit now flags `supports` links whose reasons only describe topic proximity (pattern: "A与B" with no explanatory verb). These are the most common source of spurious hub notes.
@@ -446,7 +446,7 @@ Key points to remember without loading the reference:
 - Write operations include `retype` (atomic link type change, inherits reason if not specified) and `merge` (atomic note merge with link redirect and [[ID]] rewrite).
 - Batch writes use `$0`/`$1` to reference earlier items' IDs.
 - Links are idempotent. `contradicts` is auto-bidirectional.
-- `lint --audit <check>` returns all offenders with full context (titles, reasons) for batch fixing. Available checks: related_dominance, missing_reasons, vague_reasons, duplicate_links, thin_notes, superseded_alive.
+- `lint --audit <check>` returns all offenders with full context (titles, reasons) for batch fixing. Available checks: supports_density (review evidence backbone), related_dominance (review all related links for curation), missing_reasons, vague_reasons, duplicate_links, thin_notes, superseded_alive.
 - `indexes` links are exempt from reason requirements (structural, not semantic).
 - Never truncate IDs. Always copy the full `prefix_` + 26-char ULID.
 - Curly quotes break JSON — use straight quotes only.

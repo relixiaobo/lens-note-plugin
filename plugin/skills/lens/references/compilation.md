@@ -42,11 +42,25 @@ What to notice during collision:
 
 Write what emerged from the collision. Not what the article said. Not what you already knew. The NEW understanding that neither had alone.
 
+**Before linking, classify the collision:**
+
+| Collision type | What happened | Link to create |
+|---------------|---------------|----------------|
+| **Evidential** | This note proves or demonstrates the thesis in an existing note | `supports` |
+| **Hierarchical** | This note is a concrete case or implementation of an existing note | `refines` |
+| **Topical** | Both notes cover the same territory, but neither proves the other | `related` (write a reason explaining HOW they connect) |
+| **Contradictory** | This note conflicts with an existing note | `contradicts` |
+| **Weak** | Connection is interesting but you can't articulate why | No link — leave as seed |
+
+**The test for `supports`:** Can you honestly complete this sentence? *"[This note] provides specific evidence that [target thesis] because..."* If the honest ending is "both are about X" or "both mention Y" — that's `related`, not `supports`.
+
+**Not linking is valid.** A note that enters new territory with no strong connections is a seed. Seeds find connections in future collisions when more context exists. A well-reasoned `related` link is better than a vague `supports`.
+
 Crystallization takes many forms:
 
 | What happened | What to do |
 |--------------|------------|
-| Genuinely new insight | Create a note with links to what it collided with |
+| Genuinely new insight | Classify the collision type first, then create the note with the right link |
 | Strengthened existing understanding | Update: add evidence to body, strengthen the claim |
 | Found a contradiction | Create a note with `contradicts` link. Explain the tension. |
 | Two old notes are actually the same | Merge: `write {"type":"merge","from":"dup","into":"keep"}` |
@@ -94,16 +108,24 @@ When the spark is a full article:
 2. Read the article fully. Don't start writing yet.
 3. Identify your strongest reactions — what surprised you, what you disagreed with, what connected to something you know.
 4. For each reaction: carry it into the graph. `lens search` → `lens show` → follow links → wander.
-5. At each collision point: crystallize.
+5. At each collision point: classify the collision type, then crystallize.
 6. For existing notes that gain new evidence: write update via `lens --stdin`
 7. For new insights: write note via `lens --stdin`
 8. Zero new notes is acceptable. An article that only strengthens existing knowledge produces updates, not new notes.
+
+**Two-pass for large sessions (>4 new notes):** When an article generates many notes, split the work into two passes:
+
+- **Pass 1 — Write:** Create all notes, linking each only to the source. No inter-note links yet.
+- **Pass 2 — Connect:** Once all notes exist, review them together. With the full session picture visible, classify each collision and create inter-note links.
+
+This prevents the common failure mode of creating topic-proximity `supports` links during writing, when you have the least context about how the notes relate to each other.
 
 ## Anti-Patterns
 
 - **Extraction**: creating a note for every paragraph of the article
 - **Source-oriented notes**: notes that only make sense if you name the source
-- **Linking because you can**: vague associations are noise, not structure
+- **Linking because you can**: vague associations are noise, not structure. Not linking is a valid outcome.
 - **Always creating new**: an article that covers known ground should produce updates
 - **Smoothing over contradictions**: tension is insight. Don't resolve it prematurely.
 - **Pre-building structure**: structure notes are sparse post-hoc index entries, created after clusters form naturally. Never one per article.
+- **Linking during the writing pass**: for sessions producing many notes, creating inter-note links while writing risks topic-proximity `supports` links. Write first, connect after — you'll have full context in Pass 2.

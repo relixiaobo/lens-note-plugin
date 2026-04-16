@@ -132,14 +132,14 @@ Accepts `week`/`month`/`year` or `--days N` (default: 1 day). Use to review rece
 
 ### lint
 
-Full quality report with 9 checks and offender IDs. Checks: `related_dominance`, `contradicts_count`, `super_connectors`, `missing_reasons`, `vague_reasons`, `duplicate_links`, `dead_links`, `thin_notes`, `superseded_alive`.
+Full quality report with 9 checks and offender IDs. Checks: `supports_density`, `contradicts_count`, `super_connectors`, `missing_reasons`, `vague_reasons`, `duplicate_links`, `dead_links`, `thin_notes`, `superseded_alive`.
 
 Use `--check` for CI: exit code 1 on failures (warnings don't fail).
 
 Note: `indexes` links are exempt from `missing_reasons` and `vague_reasons` checks (structural links are self-explanatory; only semantic links need reasons).
 
 ```json
-{"checks": [{"name": "related_dominance", "status": "ok", "value": 45.2, "threshold": 50, "message": "..."}],
+{"checks": [{"name": "supports_density", "status": "ok", "value": 0.42, "threshold": 0.1, "message": "supports density is 0.42 (460 supports / 1100 notes, 1360 related). Evidence backbone is healthy."}],
  "summary": {"total_checks": 9, "passed": 8, "warnings": 1, "failures": 0}}
 ```
 
@@ -147,18 +147,21 @@ Note: `indexes` links are exempt from `missing_reasons` and `vague_reasons` chec
 
 Deep-dive mode: returns ALL offenders for one check with full context (titles, reasons), for batch fixing. Supports `--limit`/`--offset`.
 
+Available audit checks: `supports_density` (all supports links, for evidence backbone review), `related_dominance` (all related links, useful for curation — not a lint check, audit-only), `missing_reasons`, `vague_reasons`, `duplicate_links`, `thin_notes`, `superseded_alive`.
+
 ```bash
-lens lint --audit related_dominance --json
+lens lint --audit supports_density --json     # review evidence backbone
+lens lint --audit related_dominance --json    # find related links to cull or upgrade
 lens lint --audit duplicate_links --json
 lens lint --audit missing_reasons --limit 20 --json
 ```
 
 Output varies by check type:
 
-**Edge-shaped** (related_dominance, missing_reasons, vague_reasons):
+**Edge-shaped** (supports_density, related_dominance, missing_reasons, vague_reasons):
 ```json
-{"check": "related_dominance", "total_links": 1556, "count": 1556,
- "offenders": [{"from": "note_01A", "from_title": "...", "to": "note_01B", "to_title": "...", "rel": "related", "reason": "..."}]}
+{"check": "supports_density", "total_links": 460, "count": 460,
+ "offenders": [{"from": "note_01A", "from_title": "...", "to": "note_01B", "to_title": "...", "rel": "supports", "reason": "..."}]}
 ```
 
 **Pair-shaped** (duplicate_links — includes keep/remove suggestion by rel strength):
