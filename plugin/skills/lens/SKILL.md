@@ -275,7 +275,12 @@ lens config set context.role "PM" --json  # Set a field
 
 # System
 lens rebuild-index --json                 # Rebuild SQLite cache from markdown files
+lens schema --json                        # Machine-readable command catalog (preferred for self-discovery)
+lens doctor --json                        # Self-diagnostic (paths, git, DB integrity, schema version)
+lens init                                 # First-time setup; re-run to repair a half-init
 ```
+
+**Agents**: prefer `lens schema --json` over hard-coding this command list. It returns every command's inputs, output shape, examples, and `readonly` flag — always in sync with the installed lens version.
 
 ### --stdin vs --file
 
@@ -441,7 +446,8 @@ For output formats (read API), write API, batch patterns, common workflows, and 
 
 Key points to remember without loading the reference:
 
-- **All JSON output uses an envelope**: success → `{ok: true, data: {...}}`, error → `{ok: false, error: {...}}`. Always check `ok` before reading `data`.
+- **All JSON output uses an envelope** (lens v1.21.0+): success → `{ok: true, schema_version: 1, data: {...}}`, error → `{ok: false, schema_version: 1, error: {code, message}, hint?: "..."}`. Always check `ok` before reading `data`; follow `hint` to decide the next action.
+- **Readonly-safe commands**: `search`, `show`, `links`, `list`, `similar`, `lint --summary`, `schema`, `doctor` work when LENS_HOME is read-only (CI, sandboxes, mounted caches). Writes require a writable LENS_HOME.
 - `show`, `links`, `similar` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
 - `show` supports batch: `lens show id1 id2 id3 --json` returns `{count, items}`.
 - `show` returns full `forward_links[]` and `backward_links[]` arrays. `links` returns `forward[]` and `backward[]`.

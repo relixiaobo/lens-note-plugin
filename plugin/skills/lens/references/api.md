@@ -14,24 +14,32 @@ Complete reference for lens read and write APIs, output formats, common workflow
 
 ## JSON Envelope
 
-All `--json` output uses a stable envelope:
+All `--json` output uses a stable envelope carrying `schema_version: 1` (lens v1.21.0+):
 
 ```json
 // Success
-{"ok": true, "data": { ... payload ... }}
+{"ok": true, "schema_version": 1, "data": { ... payload ... }}
 
 // Error
-{"ok": false, "error": {"code": "command_error", "message": "..."}, "hint": "..."}
+{"ok": false, "schema_version": 1, "error": {"code": "command_error", "message": "..."}, "hint": "..."}
 
 // Deprecation
-{"ok": false, "error": {"code": "deprecated_command", "message": "..."}, "replacement": "..."}
+{"ok": false, "schema_version": 1, "error": {"code": "deprecated_command", "message": "..."}, "replacement": "..."}
 ```
 
 Always check `ok` first. On success, read `data`. On failure, read `error.code` and `error.message`. Optional fields: `hint` (next action), `command` (which command failed), `candidates` (ambiguous match results).
 
-**Partial batch failure**: `{"ok": false, "error": {"code": "partial_failure", "message": "2 of 5 item(s) failed"}, "data": {"results": [...]}}` — individual results are still in `data.results`, each with its own `action` field.
+`schema_version` bumps only when the envelope shape changes (not on `data` field additions). Pin to a known version and inspect it before parsing.
+
+**Common error codes**: `command_error`, `unknown_command`, `deprecated_command`, `not_initialized`, `db_missing`, `db_corrupt`, `readonly_mode_write`, `ambiguous_match`, `no_match`, `partial_failure`, `invalid_request`.
+
+**Partial batch failure**: `{"ok": false, "schema_version": 1, "error": {"code": "partial_failure", "message": "2 of 5 item(s) failed"}, "data": {"results": [...]}}` — individual results are still in `data.results`, each with its own `action` field.
 
 **All examples below show the `data` payload only** (the object inside `data`), not the full envelope.
+
+**Readonly-safe commands**: `search`, `show`, `links`, `list`, `similar`, `lint --summary`, `schema`, `doctor` work when LENS_HOME is read-only (sandboxes, mounted caches). Writes require a writable LENS_HOME.
+
+**Discover commands dynamically**: `lens schema --json` returns a machine-readable catalog (inputs, output shapes, examples, readonly flag) for every command. Prefer this over hard-coding the command list.
 
 ---
 
@@ -409,10 +417,12 @@ Common multi-step workflows:
 
 4. **Curly quotes break JSON.** `"word"` (U+201C/U+201D) is not valid JSON. Use straight quotes `"word"`. When writing JSON files with special characters, use the Write tool — do not construct JSON strings by hand.
 
-5. **All JSON output uses the envelope.** Success: `{"ok": true, "data": {...}}`. Errors: `{"ok": false, "error": {"code": "...", "message": "..."}}`. Always check `ok` before reading `data`.
+5. **All JSON output uses the envelope.** Success: `{"ok": true, "schema_version": 1, "data": {...}}`. Errors: `{"ok": false, "schema_version": 1, "error": {"code": "...", "message": "..."}, "hint": "..."}`. Always check `ok` before reading `data`.
 
 ## Errors
 
-All errors follow the envelope: `{"ok": false, "error": {"code": "...", "message": "..."}, "hint": "...", "command": "..."}`
+All errors follow the envelope: `{"ok": false, "schema_version": 1, "error": {"code": "...", "message": "..."}, "hint": "...", "command": "..."}`
 
-Error codes: `command_error` (general), `deprecated_command`, `unknown_command`, `ambiguous_match`, `no_match`, `partial_failure` (batch), `invalid_request`, `empty_stdin`, `no_input`.
+Error codes: `command_error` (general), `deprecated_command`, `unknown_command`, `not_initialized` (run `lens init`), `db_missing` (run `lens init` or `lens rebuild-index`), `db_corrupt`, `readonly_mode_write` (write attempted after setReadonly), `ambiguous_match`, `no_match`, `partial_failure` (batch), `invalid_request`, `empty_stdin`, `no_input`.
+
+Follow `hint` first — it tells you the next action. Only fall back to parsing `message` if `hint` is missing.
