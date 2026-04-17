@@ -466,6 +466,8 @@ For output formats (read API), write API, batch patterns, common workflows, and 
 Key points to remember without loading the reference:
 
 - **All JSON output uses an envelope** (lens v1.21.0+): success → `{ok: true, schema_version: 1, data: {...}}`, error → `{ok: false, schema_version: 1, error: {code, message}, hint?: "..."}`. Always check `ok` before reading `data`; follow `hint` to decide the next action.
+- **Title resolution** (lens v1.23.0+): all write operations accept titles in place of IDs. `{"type":"link","from":"note_01ABC","to":"ReAct 循环","rel":"supports"}` resolves the title automatically. Ambiguous matches return candidates. This saves the search→show→copy-ID round trip.
+- **Write-time suggestions** (lens v1.23.0+): when creating a note, the response includes `suggestions[]` with unlinked-but-related notes. Use these to create follow-up links without a separate discover call.
 - **Readonly-safe commands**: `search`, `show`, `links`, `list`, `discover`, `lint`, `digest`, `schema`, `doctor` work when LENS_HOME is read-only (CI, sandboxes, mounted caches). Writes require a writable LENS_HOME.
 - `show`, `links`, `discover` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
 - `show` supports batch: `lens show id1 id2 id3 --json` returns `{count, items}`.
