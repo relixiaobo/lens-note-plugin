@@ -194,7 +194,7 @@ lens lint --audit missing_reasons --target <thesis_id> --json       # should ret
 
 ```bash
 # Find duplicates
-lens similar <id> --json
+lens discover <id> --duplicates --json
 
 # Compare content
 lens show <dup_a> <dup_b> --json
@@ -261,7 +261,7 @@ Add note-to-note links where a genuine collision happened. If none do, that's fi
 ### 2. Check for near-duplicates
 
 ```bash
-lens similar --all --threshold 0.8 --json    # high-confidence duplicates only
+lens discover --all --duplicates --threshold 0.8 --json    # high-confidence duplicates only
 ```
 
 If two new notes are near-duplicates (similarity > 0.8), merge them with `{"type":"merge","from":"weaker","into":"better"}`.

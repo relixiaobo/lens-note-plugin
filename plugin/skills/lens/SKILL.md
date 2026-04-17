@@ -106,51 +106,18 @@ Check: `which lens`. If missing: `npm install -g lens-note && lens init`
 
 ## User Context
 
-Before first use, check if the user has configured their context:
+Check context on first use: `lens lint --summary --json` — look for `context` field.
 
-```bash
-printf '%s' '{"command":"lint","flags":{"summary":true}}' | lens --stdin    # look for "context" field
-```
-
-If `context` is missing or empty, ask the user:
-- **Role**: What's your role? (e.g., product manager, researcher, engineer, student)
-- **Audience**: Who reads your notes? (e.g., yourself, your team, public)
-- **Language**: Primary language for notes?
-- **Style**: Any writing preferences? (e.g., "explain implications", "be concise")
-
-Save their answers:
-
+If missing, ask the user for **role**, **audience**, **language**, **style** and save via `lens config`:
 ```bash
 printf '%s' '{"command":"config","input":{"action":"set","key":"context.role","value":"product manager"}}' | lens --stdin
-printf '%s' '{"command":"config","input":{"action":"set","key":"context.audience","value":"engineering team"}}' | lens --stdin
 ```
 
-### How to apply context when writing notes
-
-Read the user's context from `lens lint --summary --json` and adapt every note you write:
-
-**Role** — a description of who the user is, not a single label. People have multiple facets. Read the role as background context, then **infer the right angle from the content itself**:
-- Writing about product decisions? Emphasize user impact and strategic implications.
-- Writing about technical architecture? Emphasize trade-offs and design rationale.
-- Writing about personal experience? Emphasize reflection and transferable insight.
-- Writing about a concept or theory? Emphasize clarity and connections to other ideas.
-
-**Audience** — shapes the level of explanation:
-- self → no background needed, use shorthand and jargon freely, be direct
-- team → explain cross-domain concepts, define non-obvious terms
-- public → explain all terminology, provide full context
-
-**Language** — shapes what language to write in:
-- Write titles and body in the specified language
-- Follow any specific rules the user provides (e.g., "keep technical terms in English")
-- When quoting foreign-language sources, preserve the original in blockquotes
-
-**Style** — the user's own writing principle. Apply it literally as a guide for every note. Common patterns:
-- "future usefulness" → write why, not what; record decision context and reasoning; emphasize counter-intuitive findings; avoid time-sensitive content
-- "be concise" → short sentences, no filler, one point per paragraph
-- "explain implications" → always end with "so what" — what follows from this insight
-
-If any context field is not set, use sensible defaults (explain moderately, write in English, balanced style).
+When writing notes, adapt to the context:
+- **Role** → infer the right angle from content (product → user impact; technical → trade-offs; personal → reflection)
+- **Audience** → self: jargon OK, be direct. team: explain cross-domain terms. public: full context.
+- **Language** → write in the specified language; keep foreign quotes in blockquotes
+- **Style** → apply the user's stated principle literally (e.g., "be concise" → short sentences, no filler)
 
 ## Decide Your Mode
 
@@ -230,90 +197,29 @@ When you search and find notes for the user, show:
 
 ## Commands
 
-```bash
-# Search & Read
-lens search "<query>" --json              # Full-text search (Unicode/CJK-aware)
-lens search "<query>" --resolve --json    # Resolve title → ID (exact match first)
-lens search "<query>" --expand --json     # Search with full bodies + links
-lens show <id> [id2...] --json            # Show object(s) with body + links (batch supported)
-lens links <id> --json                    # All relationships (forward + backward)
-lens links <id> --rel related --json      # Filter by relationship type
-lens links <id> --direction forward --json # Only outgoing links
+Run `lens schema --json` to get the full, always-current command catalog (inputs, output shapes, examples, readonly flags). Key commands to know:
 
-# Write
-lens write --file <path> --json           # Write note/source/task/link/unlink/update/delete/retype/merge/batch
-lens fetch <url> [--save] --json          # Extract web content (--save to create source)
+| Intent | Command |
+|--------|---------|
+| Full-text search | `lens search "<query>" --json` |
+| Search with bodies + links | `lens search "<query>" --expand --json` |
+| Resolve title → ID | `lens search "<title>" --resolve --json` |
+| Read note(s) | `lens show <id> [id2...] --json` |
+| All links for a note | `lens links <id> --json` |
+| Write note/link/update/etc | `lens write --file <path> --json` |
+| Unlinked-but-related notes | `lens discover <id> --json` |
+| Cross-domain collision | `lens discover <id> --collide --json` |
+| Find duplicates | `lens discover <id> --duplicates --json` |
+| Graph quality | `lens lint --json` |
+| Recent activity | `lens digest week --json` |
+| Keyword entry points | `lens index --json` |
 
-# Browse
-lens list notes --json                    # List all notes
-lens list notes --orphans --json          # List unlinked notes (+ --limit/--offset)
-lens list notes --since 7d --json         # List notes from last 7 days (7d/2w/1m/1y)
-lens list notes --min-links 10 --json     # Hub notes by link count
-lens list notes --max-links 2 --json      # Orphan-ish notes (useful for finding disconnected thesis nodes before creating synthesis)
-lens list sources --source-type book --json # Filter by source type
-lens list sources --inbox --json          # Sources awaiting agent processing (set by clippers)
-lens list tasks --status open --json      # Tasks by status (open/done)
+### Calling conventions
 
-# Discover & Analyze
-lens discover <id|title> --json           # Unlinked-but-related notes (spatial browsing)
-lens discover <id|title> --collide --json # Cross-domain surprises (exclude connected component)
-lens discover <id|title> --duplicates --json  # Near-duplicates (+ --threshold)
-lens discover --all --duplicates --json   # Scan all notes, group duplicates
-lens digest [week|month|year] --json      # Recent insights grouped by type
-lens lint --json                          # Graph quality checks (12 checks) with offender IDs
-lens lint --audit <check> --json          # Full offender export with context for batch fixing
-lens lint --check --json                  # Same + exit code 1 on failures (for CI)
-lens lint --summary --json                # Stats + graph health + user context
-
-# Index (Schlagwortregister)
-lens index --json                         # List all keyword entry points
-lens index "<keyword>" --json             # Show entries for a keyword
-lens index add "<keyword>" <id> --json    # Register entry point (max 3 per keyword)
-lens index remove "<keyword>" [id] --json # Remove keyword or single entry
-
-# Config
-lens config list --json                   # Show all config
-lens config get context.role --json       # Get a specific field
-lens config set context.role "PM" --json  # Set a field
-
-# System
-lens rebuild-index --json                 # Rebuild SQLite cache from markdown files
-lens schema --json                        # Machine-readable command catalog (preferred for self-discovery)
-lens doctor --json                        # Self-diagnostic (paths, git, DB integrity, schema version)
-lens init                                 # First-time setup; re-run to repair a half-init
-```
-
-**Agents**: prefer `lens schema --json` over hard-coding this command list. It returns every command's inputs, output shape, examples, and `readonly` flag — always in sync with the installed lens version.
-
-### --stdin vs --file
-
-Two ways to pass JSON input to lens. Choose based on content:
-
-| Method | When to use | Pros |
-|--------|-------------|------|
-| `--stdin` | Agent envelope protocol, simple commands | Single pipe, no temp file |
-| `--file` | Batch writes, content with special chars (Chinese, curly quotes, newlines) | Encoding-safe, debuggable |
-
-**For content with Chinese or special characters**, prefer `--file`: write JSON to a temp file first, then `lens write --file <path> --json`. This avoids shell escaping issues entirely.
-
-**`--stdin` envelope format** — all commands via stdin bypass shell escaping:
-
-```bash
-# Write (content goes in "input", never through shell)
-printf '%s' '{"command":"write","input":{"type":"note","title":"My insight","body":"Details..."}}' | lens --stdin
-
-# Search
-printf '%s' '{"command":"search","positional":["query text"]}' | lens --stdin
-
-# Fetch with flags
-printf '%s' '{"command":"fetch","positional":["https://..."],"flags":{"save":true}}' | lens --stdin
-
-# Config (read/write user context)
-printf '%s' '{"command":"config","input":{"action":"list"}}' | lens --stdin
-printf '%s' '{"command":"config","input":{"action":"set","key":"context.role","value":"PM"}}' | lens --stdin
-```
-
-Envelope format: `{"command":"...", "positional":[], "flags":{}, "input":{}}`
+- **--stdin** (preferred for agents): `printf '%s' '{"command":"...","positional":[],"flags":{},"input":{}}' | lens --stdin`
+- **--file** (preferred for Chinese/special chars): write JSON to temp file, then `lens write --file <path> --json`
+- **Title resolution**: all write operations accept titles in place of IDs — no need to resolve first
+- **Write-time suggestions**: note creation returns `suggestions[]` with unlinked-but-related notes
 
 ## Mode: Capture
 
@@ -459,28 +365,14 @@ Maintain graph health. **Read [references/curation.md](references/curation.md) b
 
 Quick summary: check orphan count → find connections for unlinked notes → only add links you can justify.
 
-## API Reference
+## API Quick Reference
 
-For output formats (read API), write API, batch patterns, common workflows, and pitfalls, read [references/api.md](references/api.md).
+For full details: [references/api.md](references/api.md). Essentials:
 
-Key points to remember without loading the reference:
-
-- **All JSON output uses an envelope** (lens v1.21.0+): success → `{ok: true, schema_version: 1, data: {...}}`, error → `{ok: false, schema_version: 1, error: {code, message}, hint?: "..."}`. Always check `ok` before reading `data`; follow `hint` to decide the next action.
-- **Title resolution** (lens v1.23.0+): all write operations accept titles in place of IDs. `{"type":"link","from":"note_01ABC","to":"ReAct 循环","rel":"supports"}` resolves the title automatically. Ambiguous matches return candidates. This saves the search→show→copy-ID round trip.
-- **Write-time suggestions** (lens v1.23.0+): when creating a note, the response includes `suggestions[]` with unlinked-but-related notes. Use these to create follow-up links without a separate discover call.
-- **Readonly-safe commands**: `search`, `show`, `links`, `list`, `discover`, `lint`, `digest`, `schema`, `doctor` work when LENS_HOME is read-only (CI, sandboxes, mounted caches). Writes require a writable LENS_HOME.
-- `show`, `links`, `discover` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
-- `show` supports batch: `lens show id1 id2 id3 --json` returns `{count, items}`.
-- `show` returns full `forward_links[]` and `backward_links[]` arrays. `links` returns `forward[]` and `backward[]`.
-- `links --rel related` filters by type. `links --direction forward` filters by direction. Combine both.
-- `search --expand` returns full note bodies — use it for synthesis. Plain `search` returns titles only — use it for finding.
-- `list tasks --status open` replaces the old `tasks` command. `list notes --min-links 10` finds hub notes.
-- `lint --summary` replaces the old `status` command (includes user context).
-- Write operations include `retype` (atomic link type change, inherits reason if not specified) and `merge` (atomic note merge with link redirect and [[ID]] rewrite).
-- Batch writes use `$0`/`$1` to reference earlier items' IDs.
-- Links are idempotent. `contradicts` is auto-bidirectional.
-- `lint --audit <check>` returns all offenders with full context (titles, reasons) for batch fixing. Available checks: `supports_density`, `super_connectors`, `related_dominance`, `missing_reasons`, `vague_reasons`, `duplicate_links`, `thin_notes`, `superseded_alive`, `orphan_notes`, `dangling_source`, `keyword_coverage`.
-- **Hub advisory in write response:** when a `{"type": "link"}` write causes a target to exceed 20 inbound links, the response includes `advisory.warning_code == "approaching_super_connector"` with `target_id`, `rel_breakdown`, and `is_healthy_hub`. In batch writes, advisories are aggregated in a top-level `warnings[]` array (keyed by `target_id`). Only explicit `link` items trigger the advisory — inline `links[]` on note/task/update writes do not. `is_healthy_hub` is `true` only when the target has inbound `indexes` links and `indexes >= supports`; otherwise apply chain topology: new notes → L2 synthesis → `refines` → master. See [references/api.md](references/api.md) and [references/compilation.md](references/compilation.md) for the repair pipeline.
-- `indexes` links are exempt from reason requirements (structural, not semantic).
-- Never truncate IDs. Always copy the full `prefix_` + 26-char ULID.
-- Curly quotes break JSON — use straight quotes only.
+- **JSON envelope**: success → `{ok: true, schema_version: 1, data: {...}}`, error → `{ok: false, ..., hint: "..."}`. Always check `ok`; follow `hint`.
+- **Title resolution**: write operations accept titles in place of IDs. Ambiguous → returns candidates.
+- **Write-time suggestions**: note creation returns `suggestions[]` with unlinked-but-related notes.
+- **ID or title**: `show`, `links`, `discover` all accept either. No need to resolve first.
+- **Batch writes**: use `$0`/`$1` to reference earlier items' IDs. Links are idempotent. `contradicts` is auto-bidirectional.
+- **Hub advisory**: when a link write exceeds 20 inbound, response includes advisory with `rel_breakdown` and `is_healthy_hub`. See [references/compilation.md](references/compilation.md) for repair pipeline.
+- **Encoding**: curly quotes break JSON — use straight quotes only. For Chinese content, prefer `--file` over `--stdin`.

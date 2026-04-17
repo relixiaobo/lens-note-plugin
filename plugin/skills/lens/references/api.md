@@ -37,7 +37,7 @@ Always check `ok` first. On success, read `data`. On failure, read `error.code` 
 
 **All examples below show the `data` payload only** (the object inside `data`), not the full envelope.
 
-**Readonly-safe commands**: `search`, `show`, `links`, `list`, `similar`, `lint --summary`, `schema`, `doctor` work when LENS_HOME is read-only (sandboxes, mounted caches). Writes require a writable LENS_HOME.
+**Readonly-safe commands**: `search`, `show`, `links`, `list`, `discover`, `lint`, `digest`, `schema`, `doctor` work when LENS_HOME is read-only (sandboxes, mounted caches). Writes require a writable LENS_HOME.
 
 **Discover commands dynamically**: `lens schema --json` returns a machine-readable catalog (inputs, output shapes, examples, readonly flag) for every command. Prefer this over hard-coding the command list.
 
@@ -382,7 +382,7 @@ Common multi-step workflows:
 4. Repeat show → links for each interesting connection
 
 **Dedup after batch import**:
-1. `lens similar --all --threshold 0.8 --json` → find duplicate groups
+1. `lens discover --all --duplicates --threshold 0.8 --json` → find duplicate groups
 2. For each group: `lens show <id1> <id2> --json` → compare content
 3. `lens write '{"type":"merge","from":"dup_id","into":"keep_id"}' --json` → atomic merge (redirects links, appends body, rewrites [[ID]] refs)
 

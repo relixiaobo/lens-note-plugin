@@ -156,7 +156,7 @@ retry only failed items.
 
 **Keep batches under 50 items.** For larger imports, pause between batches:
 ```bash
-lens similar --all --threshold 0.8 --json   # check for duplicates introduced so far
+lens discover --all --duplicates --threshold 0.8 --json   # check for duplicates introduced so far
 ```
 
 ## Adding Links During Import
@@ -176,7 +176,7 @@ Don't try to link everything during the initial write pass. Instead:
 After all batches are written, run the Post-Import Audit from [curation.md](curation.md):
 
 1. Check for lateral connections between imported notes (they may reference each other)
-2. Dedup scan: `lens similar --all --threshold 0.8 --json`
+2. Dedup scan: `lens discover --all --duplicates --threshold 0.8 --json`
 3. Dense note check: any new note with `forward_links.length > 8`?
 4. **Supports quality check** — bulk imports often create `supports` links by parent-child adjacency without real evidence. Run `lens lint --audit vague_reasons --json` and `lens lint --audit missing_reasons --json` to surface offenders. For any thesis with ≥ 5 offenders, switch to [Per-Target Supports Audit](curation.md#per-target-supports-audit) using `lens lint --audit missing_reasons --target <thesis_id> --json`.
 

@@ -75,7 +75,7 @@ lens write --file /tmp/import-batch-N.json --json
 
 Between batches, check for duplicates introduced so far:
 ```bash
-lens similar --all --threshold 0.8 --json
+lens discover --all --duplicates --threshold 0.8 --json
 ```
 
 If duplicates found, pause and resolve before continuing.
@@ -85,7 +85,7 @@ If duplicates found, pause and resolve before continuing.
 After all batches are written:
 
 1. Check for lateral connections between imported notes
-2. Run dedup scan: `lens similar --all --threshold 0.8 --json`
+2. Run dedup scan: `lens discover --all --duplicates --threshold 0.8 --json`
 3. Report final stats: total imported, total skipped, any duplicates found
 
 Do NOT try to link everything during import. Seeds (new territory with no connections) are fine — they'll find connections during future compilation.
