@@ -264,11 +264,11 @@ Each candidate gets a short label (a / b / c for one note, or 1 / 2 / 3 for mult
 >
 > Placement candidates:
 >
->   a · [strong] refines  → Revisiting the Unix pipeline philosophy (sim 0.78)
+>   a · [strong] refines  → Revisiting the Unix pipeline philosophy
 >       why: new note is the Unix principle applied to agent tooling
->   b · [mid]    related  → Case study: a sub-agent system built from small tools (sim 0.71)
+>   b · [mid]    related  → Case study: a sub-agent system built from small tools
 >       why: same thesis, different case — cross-source resonance
->   c · [weak]   related  → Orthogonality as a design heuristic (sim 0.65)
+>   c · [weak]   related  → Orthogonality as a design heuristic
 >       why: related principle but different abstraction level; may skip
 >
 > Reply: `a,b` / `a` / `a supports, b skip` / `all` / `skip`
@@ -288,7 +288,7 @@ Edge cases:
 - Similarity < 0.5 → usually `related` with explicit reason, or no link
 - Similarity < 0.1 → don't show; surface the note as "new territory" instead (see Exceptions below)
 
-**Never flood the user.** Cap at ~5 candidates per note. If more exist, show top 5 by similarity and note "(N more below sim 0.X not shown)".
+**Never flood the user.** Cap at ~5 candidates per note. If more exist, show top 5 by relevance and note "(N more weaker matches not shown)".
 
 ### Step 4 — Close out the source (if capturing from inbox)
 
