@@ -125,9 +125,9 @@ When lens is relevant, identify the mode before acting:
 
 | User says | Mode | What to do |
 |-----------|------|------------|
-| "save this" / quick thought | **Capture** | Search if topic might exist → write → link if match found. |
+| "save this" / quick thought | **Capture** | Search if topic might exist → write → map candidate → link. |
 | "compile" / "analyze this article" | **Compile** | Read [references/compilation.md](references/compilation.md) first. |
-| "what do I know about X" | **Query** | Search → show → synthesize with citations. |
+| "what do I know about X" | **Query** | Search → map top results → show key notes → synthesize. |
 | "clean up" / "fix orphans" | **Curate** | Read [references/curation.md](references/curation.md) first. |
 | "this contradicts..." / records a contradiction | **Update** | Search the contradicting note → update or link. |
 | "add a task" / "TODO" / explicitly track work | **Task** | Read [references/tasks.md](references/tasks.md) first. |
@@ -199,20 +199,17 @@ When you search and find notes for the user, show:
 
 Run `lens schema --json` to get the full, always-current command catalog (inputs, output shapes, examples, readonly flags). Key commands to know:
 
-| Intent | Command |
-|--------|---------|
-| Full-text search | `lens search "<query>" --json` |
-| Search with bodies + links | `lens search "<query>" --expand --json` |
-| Resolve title → ID | `lens search "<title>" --resolve --json` |
-| Read note(s) | `lens show <id> [id2...] --json` |
-| All links for a note | `lens links <id> --json` |
-| Write note/link/update/etc | `lens write --file <path> --json` |
-| Unlinked-but-related notes | `lens discover <id> --json` |
-| Cross-domain collision | `lens discover <id> --collide --json` |
-| Find duplicates | `lens discover <id> --duplicates --json` |
-| Graph quality | `lens lint --json` |
-| Recent activity | `lens digest week --json` |
-| Keyword entry points | `lens index --json` |
+| Intent | Command | When to use |
+|--------|---------|-------------|
+| Find notes | `lens search "<query>" --json` | Know what you're looking for |
+| Read content | `lens show <id> --json` | Need the full text |
+| See cluster structure | `lens map <id> --json` | Understand a topic area before diving in |
+| Filter links precisely | `lens links <id> --rel --json` | Before retype/unlink operations |
+| Find new connections | `lens discover <id> --json` | Spatial browsing, dedup, collision |
+| Write/modify | `lens write --file <path> --json` | Create or change anything |
+| Recent activity | `lens digest week --json` | "What happened this week" |
+| Graph quality | `lens lint --json` | Check health, find issues |
+| Keyword entry | `lens index --json` | "Where do I start" |
 
 ### Calling conventions
 
@@ -372,7 +369,7 @@ For full details: [references/api.md](references/api.md). Essentials:
 - **JSON envelope**: success → `{ok: true, schema_version: 1, data: {...}}`, error → `{ok: false, ..., hint: "..."}`. Always check `ok`; follow `hint`.
 - **Title resolution**: write operations accept titles in place of IDs. Ambiguous → returns candidates.
 - **Write-time suggestions**: note creation returns `suggestions[]` with unlinked-but-related notes.
-- **ID or title**: `show`, `links`, `discover` all accept either. No need to resolve first.
+- **ID or title**: `show`, `map`, `links`, `discover` all accept either. No need to resolve first.
 - **Batch writes**: use `$0`/`$1` to reference earlier items' IDs. Links are idempotent. `contradicts` is auto-bidirectional.
 - **Hub advisory**: when a link write exceeds 20 inbound, response includes advisory with `rel_breakdown` and `is_healthy_hub`. See [references/compilation.md](references/compilation.md) for repair pipeline.
 - **Encoding**: curly quotes break JSON — use straight quotes only. For Chinese content, prefer `--file` over `--stdin`.
