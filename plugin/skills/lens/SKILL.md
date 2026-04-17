@@ -25,7 +25,7 @@ lens has its own vocabulary — do NOT use terms from other knowledge management
 | **Source** | Provenance record (article, book, video). Contains the original content. | "literature note" |
 | **Note** | Your thought — one claim per card. Every Note is a first-class citizen. | "permanent note", "fleeting note", "atomic note" |
 | **Task** | Action item that spans time. A Note with status. | "TODO", "reminder" |
-| **links[]** | Typed semantic edges: supports, contradicts, refines, related, indexes. | "backlinks", "wikilinks" |
+| **links[]** | Typed semantic edges: supports, contradicts, refines, related, indexes, continues. | "backlinks", "wikilinks" |
 | **Structure note** | A Note that indexes a cluster using `rel: "indexes"`. | "MOC", "hub note", "index note" |
 
 There is no "fleeting note" in lens. If a thought is worth storing, it's a Note. If it's not worth storing, don't write it.
@@ -51,7 +51,8 @@ When linking two notes, work through this order:
 2. **A is a concrete version/implementation/case of B?** → `refines`
 3. **A strengthens or provides evidence for B?** → `supports`
 4. **A indexes/organizes B?** → `indexes`
-5. **None of the above?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
+5. **A continues/extends B's line of thought?** → `continues` (Folgezettel — builds on B, next step in a chain)
+6. **None of the above?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
 
 **`related` is the last resort, not the default.** The CLI rejects `related` without a reason. Run `lens lint --json` to check graph health.
 
@@ -253,11 +254,13 @@ lens list sources --source-type book --json # Filter by source type
 lens list sources --inbox --json          # Sources awaiting agent processing (set by clippers)
 lens list tasks --status open --json      # Tasks by status (open/done)
 
-# Analyze
-lens similar <id|title> --json            # Find near-duplicates (+ --threshold)
-lens similar --all --json                 # Scan all notes, group duplicates
+# Discover & Analyze
+lens discover <id|title> --json           # Unlinked-but-related notes (spatial browsing)
+lens discover <id|title> --collide --json # Cross-domain surprises (exclude connected component)
+lens discover <id|title> --duplicates --json  # Near-duplicates (+ --threshold)
+lens discover --all --duplicates --json   # Scan all notes, group duplicates
 lens digest [week|month|year] --json      # Recent insights grouped by type
-lens lint --json                          # Graph quality checks (9 checks) with offender IDs
+lens lint --json                          # Graph quality checks (12 checks) with offender IDs
 lens lint --audit <check> --json          # Full offender export with context for batch fixing
 lens lint --check --json                  # Same + exit code 1 on failures (for CI)
 lens lint --summary --json                # Stats + graph health + user context
@@ -330,29 +333,45 @@ printf '%s' '{"command":"write","input":{"type":"note","title":"Simple tools com
 
 One rule: **one idea per note.** If the thought has multiple claims, split into separate notes.
 
-### Dedup check with `lens similar`
+### Dedup check with `lens discover --duplicates`
 
 After creating a note, check for near-duplicates:
 
 ```bash
-lens similar <id> --json                # default threshold: 0.3
-lens similar <id> --threshold 0.5 --json  # stricter matching
+lens discover <id> --duplicates --json                # default threshold: 0.3
+lens discover <id> --duplicates --threshold 0.5 --json  # stricter matching
 ```
 
 To scan all notes at once and group duplicates:
 
 ```bash
-lens similar --all --json               # all groups above 0.3
-lens similar --all --threshold 0.8 --json  # only high-confidence duplicates
+lens discover --all --duplicates --json               # all groups above 0.3
+lens discover --all --duplicates --threshold 0.8 --json  # only high-confidence duplicates
 ```
 
 - Only works on notes (not sources or tasks)
-- Uses character trigrams + Dice coefficient — language-agnostic (works for CJK, Latin, etc.)
+- Uses TF-IDF + cosine similarity with ICU word segmentation — multilingual (CJK, Latin, Arabic, etc.)
 - `--threshold`: 0–1 float. Default 0.3 catches loose duplicates; 0.5+ for stricter matching
 - Single-note output: `{"id": "...", "count": N, "results": [{"id": "...", "title": "...", "similarity": 0.65}, ...]}`
 - `--all` output: `{"count": N, "groups": [{"notes": [...], "pairs": [{"a": "...", "b": "...", "similarity": 0.9}]}]}`
 
 If a near-duplicate is found (similarity > 0.5), merge them: `lens write '{"type":"merge","from":"dup_id","into":"keep_id"}' --json`. This redirects links, appends body, and rewrites `[[ID]]` refs in one step.
+
+### Discovery modes
+
+`discover` has three modes for different intents:
+
+| Mode | Flag | What it finds | Use when |
+|------|------|---------------|----------|
+| Default | (none) | Unlinked-but-related notes | Filing a note — "what should I link this to?" |
+| Collide | `--collide` | Cross-domain surprises | Collision Method — "surprise me with unexpected connections" |
+| Duplicates | `--duplicates` | Near-duplicates for merge | Dedup — "is this already in the graph?" |
+
+```bash
+lens discover <id> --json                 # What's nearby but unlinked? (exclude 2-hop neighbors)
+lens discover <id> --collide --json       # Cross-domain collision (exclude entire connected component)
+lens discover <id> --duplicates --json    # Find duplicates (no exclusion)
+```
 
 ## Mode: Query
 
@@ -447,8 +466,8 @@ For output formats (read API), write API, batch patterns, common workflows, and 
 Key points to remember without loading the reference:
 
 - **All JSON output uses an envelope** (lens v1.21.0+): success → `{ok: true, schema_version: 1, data: {...}}`, error → `{ok: false, schema_version: 1, error: {code, message}, hint?: "..."}`. Always check `ok` before reading `data`; follow `hint` to decide the next action.
-- **Readonly-safe commands**: `search`, `show`, `links`, `list`, `similar`, `lint --summary`, `schema`, `doctor` work when LENS_HOME is read-only (CI, sandboxes, mounted caches). Writes require a writable LENS_HOME.
-- `show`, `links`, `similar` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
+- **Readonly-safe commands**: `search`, `show`, `links`, `list`, `discover`, `lint`, `digest`, `schema`, `doctor` work when LENS_HOME is read-only (CI, sandboxes, mounted caches). Writes require a writable LENS_HOME.
+- `show`, `links`, `discover` accept ID or title — no need to resolve first. If ambiguous, returns candidates.
 - `show` supports batch: `lens show id1 id2 id3 --json` returns `{count, items}`.
 - `show` returns full `forward_links[]` and `backward_links[]` arrays. `links` returns `forward[]` and `backward[]`.
 - `links --rel related` filters by type. `links --direction forward` filters by direction. Combine both.
@@ -458,7 +477,7 @@ Key points to remember without loading the reference:
 - Write operations include `retype` (atomic link type change, inherits reason if not specified) and `merge` (atomic note merge with link redirect and [[ID]] rewrite).
 - Batch writes use `$0`/`$1` to reference earlier items' IDs.
 - Links are idempotent. `contradicts` is auto-bidirectional.
-- `lint --audit <check>` returns all offenders with full context (titles, reasons) for batch fixing. Available checks: `supports_density` (evidence backbone health), `super_connectors` (notes with >30 inbound — apply chain topology to repair), `related_dominance` (audit related links), `missing_reasons`, `vague_reasons`, `duplicate_links`, `thin_notes`, `superseded_alive`.
+- `lint --audit <check>` returns all offenders with full context (titles, reasons) for batch fixing. Available checks: `supports_density`, `super_connectors`, `related_dominance`, `missing_reasons`, `vague_reasons`, `duplicate_links`, `thin_notes`, `superseded_alive`, `orphan_notes`, `dangling_source`, `keyword_coverage`.
 - **Hub advisory in write response:** when a `{"type": "link"}` write causes a target to exceed 20 inbound links, the response includes `advisory.warning_code == "approaching_super_connector"` with `target_id`, `rel_breakdown`, and `is_healthy_hub`. In batch writes, advisories are aggregated in a top-level `warnings[]` array (keyed by `target_id`). Only explicit `link` items trigger the advisory — inline `links[]` on note/task/update writes do not. `is_healthy_hub` is `true` only when the target has inbound `indexes` links and `indexes >= supports`; otherwise apply chain topology: new notes → L2 synthesis → `refines` → master. See [references/api.md](references/api.md) and [references/compilation.md](references/compilation.md) for the repair pipeline.
 - `indexes` links are exempt from reason requirements (structural, not semantic).
 - Never truncate IDs. Always copy the full `prefix_` + 26-char ULID.
