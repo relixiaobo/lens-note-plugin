@@ -253,23 +253,41 @@ The write response returns `suggestions[]` — up to 5 unlinked-but-related note
 
 ### Step 3 — Placement (ask the user)
 
-Surface `suggestions[]` to the user. Do NOT silently ignore them; do NOT autonomously link them. Example:
+Surface `suggestions[]` to the user. Do NOT silently ignore them; do NOT autonomously link them.
+
+**Presentation format: labeled candidates + shorthand response.**
+
+Each candidate gets a short label (a / b / c for one note, or 1 / 2 / 3 for multi-note). Show the skill's recommendation inline (strength + suggested rel + why), but keep final judgment with the user. Example:
 
 > 已保存 "Simple tools composed together beat complex frameworks" (note_01K…)
 >
-> 3 条相关但尚未连接：
->   [1] Unix pipeline 哲学 2025 重读 — sim 0.78
->   [2] Manus sub-agent：小工具组合优于大框架 — sim 0.71
->   [3] 《Pragmatic Programmer》正交性笔记 — sim 0.65
+> Placement 候选：
 >
-> 要连哪些？每条请选 rel：`refines` / `supports` / `contradicts` / `related`（related 需理由）。
+>   a · [strong] refines  → Unix pipeline 哲学 2025 重读 (sim 0.78)
+>       why: 新卡是 Unix pipeline 原则在 agent tooling 场景的具体化
+>   b · [mid]    related  → Manus sub-agent：小工具组合优于大框架 (sim 0.71)
+>       why: 同主题不同案例，跨来源呼应
+>   c · [weak]   related  → 《Pragmatic Programmer》正交性笔记 (sim 0.65)
+>       why: 原则相关但抽象层级差大，可 skip
+>
+> 回复：`a,b` / `a` / `a supports, b skip` / `all` / `skip`
 
-Wait for the user's reply, then add links with `lens write type=link`.
+**Accept shorthand responses.** Parse the reply as:
+- Bare labels (`a`, `b,c`, `a,b`) → link those with the recommended rel
+- Label + rel (`a supports`, `b refines`) → override the recommended rel
+- `all` → link every candidate with recommended rel
+- `skip` / `none` / no reply → link nothing
+- Inline modifiers (`b skip`) → drop specific items from a broader selection
 
-For each candidate, the user's choice determines rel. When in doubt:
+**Always include the skill's recommendation** (strong / mid / weak + suggested rel + one-line why) so the user can say `a,b` without re-reading every candidate in detail. Cost of response: one line.
+
+Edge cases:
 - Similarity > 0.85 on a candidate → propose **merge** instead of link (`lens write '{"type":"merge","from":"<new_id>","into":"<existing_id>"}' --json`)
-- Similarity 0.5–0.85 → likely `refines` / `supports` / `contradicts` — user reads both and decides
+- Similarity 0.5–0.85 → usually `refines` / `supports` / `contradicts`
 - Similarity < 0.5 → usually `related` with explicit reason, or no link
+- Similarity < 0.1 → don't show; surface the note as "new territory" instead (see Exceptions below)
+
+**Never flood the user.** Cap at ~5 candidates per note. If more exist, show top 5 by similarity + note "(另有 N 条未列 sim < 0.X)".
 
 ### Step 4 — Close out the source (if capturing from inbox)
 
