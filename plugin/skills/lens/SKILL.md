@@ -222,17 +222,57 @@ Run `lens schema --json` to get the full, always-current command catalog (inputs
 
 For quick thoughts, observations, ideas. Fast, but not blind.
 
-If the topic might already exist in the graph, search first:
+**Writing and placement are two steps, not one.** Finding candidates is the skill's job — removes scanning friction. **Choosing which to link and what rel is the user's judgment** — this is where the thinking happens. Never collapse them by auto-picking links for the user.
+
+### Step 1 — Search (when the topic may already exist)
+
+If the thought touches something likely already in the graph:
 
 ```bash
-lens search "key concept from the thought" --json
+lens search "key concepts" --json
 ```
 
-If you find related notes, read the top 1-2 (`lens show <id> --json`) and create the new note with links. If nothing relevant or the thought is clearly new territory, write without links.
+If a tight match surfaces (very similar title/claim), check whether this is actually a merge or update before writing a new card.
+
+### Step 2 — Write
+
+Write the note. Include only links you are highly confident about (explicit `contradicts` stated by the user, quote from a named source, etc.). Leave the rest for Step 3.
 
 ```bash
 printf '%s' '{"command":"write","input":{"type":"note","title":"Simple tools composed together beat complex frameworks"}}' | lens --stdin
 ```
+
+The write response returns `suggestions[]` — up to 5 unlinked-but-related notes ranked by similarity. **Do not discard this field.**
+
+### Step 3 — Placement (ask the user)
+
+Surface `suggestions[]` to the user. Do NOT silently ignore them; do NOT autonomously link them. Example:
+
+> 已保存 "Simple tools composed together beat complex frameworks" (note_01K…)
+>
+> 3 条相关但尚未连接：
+>   [1] Unix pipeline 哲学 2025 重读 — sim 0.78
+>   [2] Manus sub-agent：小工具组合优于大框架 — sim 0.71
+>   [3] 《Pragmatic Programmer》正交性笔记 — sim 0.65
+>
+> 要连哪些？每条请选 rel：`refines` / `supports` / `contradicts` / `related`（related 需理由）。
+
+Wait for the user's reply, then add links with `lens write type=link`.
+
+For each candidate, the user's choice determines rel. When in doubt:
+- Similarity > 0.85 on a candidate → propose **merge** instead of link (`lens write '{"type":"merge","from":"<new_id>","into":"<existing_id>"}' --json`)
+- Similarity 0.5–0.85 → likely `refines` / `supports` / `contradicts` — user reads both and decides
+- Similarity < 0.5 → usually `related` with explicit reason, or no link
+
+### Exceptions to Step 3
+
+- User explicitly says "快速保存" / "just save" / "quick save" → skip Step 3, write is done
+- `suggestions[]` is empty → nothing to place; write is done
+- Capture during bulk Compile/Import → follow that mode's rules, not Capture's
+
+### Why this shape
+
+Luhmann wrote each card first, then carried it to the box and looked for where it fit. The search ("find candidates") and the judgment ("decide placement") are distinct cognitive acts. AI is excellent at the first and should never pretend to do the second unless the user explicitly delegates it.
 
 One rule: **one idea per note.** If the thought has multiple claims, split into separate notes.
 
