@@ -224,6 +224,12 @@ For quick thoughts, observations, ideas. Fast, but not blind.
 
 **Writing and placement are two steps, not one.** Finding candidates is the skill's job — removes scanning friction. **Choosing which to link and what rel is the user's judgment** — this is where the thinking happens. Never collapse them by auto-picking links for the user.
 
+### Annotated sources
+
+If the capture draws from a source that has `annotations[]`, those annotations are **strong must-capture signals** — the user has explicitly marked those passages. Extract the annotated content as the primary note(s). Never skip an annotation in favor of other content you find more interesting.
+
+But annotations are **not a ceiling**. The user's comment: "高亮和评论只是我注意到的部分，不代表其他地方不重要." Scan the rest of the source for additional thesis-grade claims and surface them to the user as candidates — e.g. "你没标注但看起来也重要：…，要不要写？" Do **not** autonomously write notes from un-annotated passages; always ask first.
+
 ### Step 1 — Search (when the topic may already exist)
 
 If the thought touches something likely already in the graph:
@@ -264,10 +270,21 @@ For each candidate, the user's choice determines rel. When in doubt:
 - Similarity 0.5–0.85 → likely `refines` / `supports` / `contradicts` — user reads both and decides
 - Similarity < 0.5 → usually `related` with explicit reason, or no link
 
+### Step 4 — Close out the source (if capturing from inbox)
+
+If the note you just wrote references an inbox source (via `[[src_...]]` in body or the `source` field), immediately flip the source out of inbox:
+
+```bash
+printf '%s' '{"command":"write","input":{"type":"update","id":"src_01K...","set":{"inbox":false}}}' | lens --stdin
+```
+
+`inbox: true` means "awaiting processing." Once a note captures content from the source, processing is done. Leaving it in inbox turns the queue into noise.
+
 ### Exceptions to Step 3
 
-- User explicitly says "快速保存" / "just save" / "quick save" → skip Step 3, write is done
-- `suggestions[]` is empty → nothing to place; write is done
+- User explicitly says "快速保存" / "just save" / "quick save" → skip Step 3, write is done (still do Step 4 if inbox source)
+- `suggestions[]` is empty → **new territory**. Say so to the user ("图里暂时没有相关近邻，这是新方向") — don't treat it as "nothing to do"; it's a signal worth mentioning. Still do Step 4.
+- All candidates' similarity < 0.1 → effectively new territory. Same treatment as above. Don't parade noise as candidates.
 - Capture during bulk Compile/Import → follow that mode's rules, not Capture's
 
 ### Why this shape
@@ -361,6 +378,8 @@ Deep processing using the **Collision Method**: Spark → Collide → Crystalliz
 **Read [references/compilation.md](references/compilation.md) before proceeding** — it contains the full methodology.
 
 Quick summary: fetch content → carry your thoughts into the knowledge graph → wander through existing notes following links → crystallize what emerges from the collision. Update existing notes when possible. Zero new notes is acceptable.
+
+**Close out the source when done.** If the source was in inbox, flip `inbox: false` once compilation is complete — regardless of how many notes were produced (including zero). The inbox queue tracks what still needs processing, not what was fruitful. If a source gets re-opened later, the user can manually re-flag it.
 
 ## Mode: Enrich
 
