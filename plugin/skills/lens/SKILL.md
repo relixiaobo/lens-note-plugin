@@ -43,18 +43,34 @@ Two kinds of notes require different title patterns:
 
 If an observation has been confirmed by multiple independent sources, you may write a separate thesis note linking back to them with `supports`.
 
-### Choosing link types (rel decision tree)
+### Choosing link types — two independent checks
 
-When linking two notes, work through this order:
+A link between B and A carries **two orthogonal dimensions**: a structural relation (what they mean to each other) and a Folgezettel relation (whether B is a step in a thinking line A started). **Evaluate both every time.** A single pair can carry a structural edge *and* a `continues` edge — they are not alternatives.
+
+**Check 1 — Folgezettel (ask first, orthogonal to Check 2)**
+
+Ask: **does B address a question / tension / open end that A raised?** I.e., did B emerge as the next step in the same line of reasoning A began?
+
+Tests:
+- A was already in your graph when B was written (temporal precedence)
+- B answers a question A implicitly left open, or carries A's idea forward into new territory (not merely "B is about the same topic as A")
+
+→ **Yes** → add `continues` from B to A (*alongside* whatever Check 2 produces)
+→ **No** → skip `continues` (sequentially written does not equal intentionally chained)
+
+Critical test: if a reader walks from A to B via your links, does the trace follow your actual thought flow? Not topic adjacency — reasoning continuity.
+
+**Check 2 — Structural relation** (pick exactly one)
 
 1. **A opposes B?** → `contradicts` (most valuable — tensions are where knowledge grows)
-2. **A is a concrete version/implementation/case of B?** → `refines`
-3. **A strengthens or provides evidence for B?** → `supports`
+2. **B is a concrete version/implementation/case of A?** → `refines`
+3. **B strengthens or provides evidence for A?** → `supports`
 4. **A indexes/organizes B?** → `indexes`
-5. **A continues/extends B's line of thought?** → `continues` (Folgezettel — builds on B, next step in a chain)
-6. **None of the above?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
+5. **None of the above, but they share context?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
 
-**`related` is the last resort, not the default.** The CLI rejects `related` without a reason. Run `lens lint --json` to check graph health.
+**`related` is the last resort for Check 2, not the default.** The CLI rejects `related` without a reason. Run `lens lint --json` to check graph health.
+
+**Why this matters:** without explicit `continues` edges, your thinking chains disappear into generic `refines`/`supports` soup. A reader (or future-you) cannot ask "what was the next step in this line?" — which is the core value of the Zettelkasten method. `continues` is the spine; the structural rels are ribs.
 
 ### `supports` quality rule
 
