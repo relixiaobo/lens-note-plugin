@@ -1,6 +1,6 @@
 {
   "name": "lens",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Knowledge graph for agents. Store, query, and link structured knowledge across sessions.",
   "author": {
     "name": "relixiaobo",
@@ -15,6 +15,9 @@
     "./commands/import.md",
     "./commands/recall.md",
     "./commands/review.md",
-    "./commands/save.md"
+    "./commands/save.md",
+    "./commands/collide.md",
+    "./commands/tensions.md",
+    "./commands/compile.md"
   ]
 }
