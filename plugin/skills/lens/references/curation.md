@@ -58,8 +58,9 @@ Work through this decision tree in order:
 1. **Does A oppose or challenge B?** → `contradicts` (auto-bidirectional)
 2. **Is A a more specific version, concrete implementation, or case study of B?** → `refines`
 3. **Does A strengthen, provide evidence for, or validate B?** → `supports`
-4. **Is A an index/MOC entry organizing B?** → `indexes`
-5. **None of the above, but genuinely connected?** → `related` (must provide a reason explaining HOW — "related to same topic" is not enough)
+4. **None of the above, but genuinely connected?** → `related` (must provide a reason explaining HOW — "related to same topic" is not enough)
+
+For topic grouping or MOC-style organization, use a whiteboard (`lens board`) instead of a typed link.
 
 `related` requires a `reason` field. If you cannot articulate the relationship direction, the link is probably not worth creating.
 
@@ -118,13 +119,12 @@ lens lint --json
 
 ### Rel strength for duplicate cleanup
 
-When `duplicate_links` reports a pair with multiple rels, keep the strongest: `indexes`/`contradicts` > `refines` > `supports` > `related`. `lint --audit duplicate_links` suggests which to keep.
+When `duplicate_links` reports a pair with multiple rels, keep the strongest: `contradicts`/`continues` > `refines` > `supports` > `related`. `lint --audit duplicate_links` suggests which to keep.
 
 ### Reason requirements
 
 - `related`: **required** (CLI rejects without one)
-- `supports`, `contradicts`, `refines`: recommended (lint checks)
-- `indexes`: **exempt** (structural link, self-explanatory — MOC→child navigation)
+- `supports`, `contradicts`, `refines`, `continues`: recommended (lint checks)
 
 ## Per-Target Supports Audit
 
@@ -211,23 +211,22 @@ Merge is idempotent — retrying after the source is deleted returns `"action": 
 printf '%s' '{"command":"write","input":{"type":"update","id":"note_OLD","body":"**Superseded** by note_NEW.","add":{"links":[{"to":"note_NEW","rel":"related","reason":"superseded by newer understanding"}]}}}' | lens --stdin
 ```
 
-## Structure Notes and the Keyword Index
+## Whiteboards and the Keyword Index
 
 Two complementary navigation tools — don't confuse them:
 
-- **Structure note**: a regular note whose body uses `[[note_ID]]` to reference 3–8 entry-point notes on a topic, with `rel: "indexes"` in `links[]`. Created manually after a cluster forms naturally.
+- **Whiteboard** (`lens board`): a spatial workspace that aggregates 3–30 related Notes/Sources/Tasks for topic research. Independent from the graph — adding a card does NOT create a link. Created manually after a cluster forms naturally.
 - **Keyword index** (`lens index`): a sparse registry mapping a keyword string to 1–3 note IDs. No body, no reasoning — just a pointer. Used for quick navigation entry across the whole graph.
 
-Use them together: the keyword index gets you into a cluster; the structure note shows the cluster's shape.
+Use them together: the keyword index gets you into a cluster; the whiteboard shows the cluster's shape.
 
-Rules for structure notes:
+Rules for whiteboards:
 
 - Create them only AFTER a cluster of related notes has formed naturally
-- Link to child notes via `links[]` with `rel: "indexes"` — this distinguishes "organizes" from "semantically relates"
-- Use `[[note_ID]]` in the body for inline references (resolved to `[Title](ID)` on read)
-- They are navigational aids, not categories
-- Most knowledge graphs need very few structure notes
-- Never create one per article or per topic automatically
+- `lens board create --title "..."` then `lens board add <wb-id> <card-id>...` to populate
+- Use `lens board show <wb-id>` to review members; `lens board find <card-id>` to see which boards contain a card
+- They are workspace aggregations, not categories or taxonomy
+- Most knowledge graphs need very few whiteboards
 
 ### Dense Note Audit
 
@@ -242,7 +241,7 @@ Common causes and fixes:
 - **Compilation linked everything to one "hub" note** → remove links you can't justify
 - **One note doing two separate jobs** → split it; connect the two halves with `refines` or `related`
 
-A carefully curated structure note with 8 links is fine. A compilation note with 15 loose `related` links is not.
+A compilation note with 15 loose `related` links is always noise — if those notes really belong together, they belong on a whiteboard, not chained off a single hub.
 
 ## After Bulk Compilation
 
@@ -289,6 +288,6 @@ Note: if you don't know the `rel` type of the dead link, check `lens show note_A
 ## Anti-Patterns
 
 - Linking every orphan to the nearest vaguely-related note (noise)
-- Creating structure notes proactively before clusters form
+- Creating whiteboards proactively before clusters form
 - Ignoring orphans entirely (they should be revisited when new related knowledge arrives)
 - Deleting notes instead of superseding them

@@ -91,7 +91,7 @@ Accepts ID or title (same auto-resolve as `show`). Shows all relationships for a
 
 Only real graph edges (from `links[]` in YAML) appear here. Forward links include `reason` when present. The `source` metadata field is NOT included — use `show` to see a note's source.
 
-**Filters**: `--rel related` returns only related links. `--direction forward` returns only outgoing links. Combine both: `--rel related --direction forward`. Valid rels: supports, contradicts, refines, related, indexes. Valid directions: forward, backward.
+**Filters**: `--rel related` returns only related links. `--direction forward` returns only outgoing links. Combine both: `--rel related --direction forward`. Valid rels: supports, contradicts, refines, related, continues. Valid directions: forward, backward.
 
 Use `links` to explore the graph — follow connections to discover related knowledge.
 
@@ -144,8 +144,6 @@ Full quality report with 9 checks and offender IDs. Checks: `supports_density`, 
 
 Use `--check` for CI: exit code 1 on failures (warnings don't fail).
 
-Note: `indexes` links are exempt from `missing_reasons` and `vague_reasons` checks (structural links are self-explanatory; only semantic links need reasons).
-
 ```json
 {"checks": [{"name": "supports_density", "status": "ok", "value": 0.42, "threshold": 0.1, "message": "supports density is 0.42 (460 supports / 1100 notes, 1360 related). Evidence backbone is healthy."}],
  "summary": {"total_checks": 9, "passed": 8, "warnings": 1, "failures": 0}}
@@ -196,7 +194,7 @@ Quick stats + graph health + user context (replaces `status`):
 {"path": "/Users/.../.lens", "notes": 900, "sources": 105,
  "tasks": {"open": 7, "done": 0, "total": 7}, "total": 1012,
  "connectivity": {"orphan_count": 4, "orphan_rate": 0.4, "total_links": 2424, "cross_source_pct": 2.0},
- "link_types": {"related": 1651, "supports": 451, "refines": 200, "contradicts": 16, "indexes": 110},
+ "link_types": {"related": 1651, "supports": 451, "refines": 200, "contradicts": 16, "continues": 42},
  "context": {"role": "...", "audience": "...", "language": "...", "style": "..."}}
 ```
 
@@ -282,7 +280,7 @@ Pass JSON via `--stdin` (recommended) or `--file`. The `type` field routes:
 [{...}, {...}]  // batch — $0/$1 reference earlier items' IDs
 ```
 
-Link types: supports, contradicts (auto-bidirectional), refines, related, indexes (MOC → child). **`related` requires a `reason` field** — the CLI rejects related links without one. **`indexes` is exempt from reason requirements** (structural link). Prefer precise rels (contradicts → refines → supports) over related.
+Link types: supports, contradicts (auto-bidirectional), refines, related, continues. **`related` requires a `reason` field** — the CLI rejects related links without one. Prefer precise rels (contradicts → refines → supports) over related. For topic organization (what used to be called a "structure note" or MOC), use a whiteboard (`lens board`) instead of a typed link.
 
 **Links are idempotent.** Writing the same link twice returns `"action": "unchanged"`. Writing with a different reason returns `"action": "updated"`. No duplicates are ever created.
 
@@ -302,13 +300,12 @@ Link types: supports, contradicts (auto-bidirectional), refines, related, indexe
     "soft_threshold": 20,
     "hard_threshold": 30,
     "rel_breakdown": {"supports": 18, "refines": 3, "related": 1},
-    "is_healthy_hub": false,
-    "message": "Target has 22 inbound links (18 supports, 0 indexes)."
+    "message": "Target has 22 inbound links (18 supports)."
   }
 }
 ```
 
-The advisory reports facts; how to respond is the caller's decision. `is_healthy_hub` is `true` only when the target has at least one `indexes` inbound link AND `indexes >= supports` — i.e., it functions as a structural index. If `true`, no action needed. If `false`, apply chain topology before linking more notes: create a thematic L2 synthesis note, redirect new notes to L2 (`supports`), L2 `refines` target. See [compilation.md](compilation.md#cluster-check) for the Cluster Check rule.
+The advisory reports facts; how to respond is the caller's decision. When a target accumulates many inbound links, apply chain topology before linking more notes: create a thematic L2 synthesis note, redirect new notes to L2 (`supports`), L2 `refines` target. See [compilation.md](compilation.md#cluster-check) for the Cluster Check rule.
 
 **Batch hub warnings:** In batch mode with `link` items, advisories are surfaced as a deduplicated `warnings[]` array at the top level (not per-item), keyed by `target_id`, showing the peak inbound count observed during the batch:
 
@@ -323,8 +320,7 @@ The advisory reports facts; how to respond is the caller's decision. `is_healthy
       "soft_threshold": 20,
       "hard_threshold": 30,
       "rel_breakdown": {"supports": 20, "refines": 5},
-      "is_healthy_hub": false,
-      "message": "Target has 25 inbound links (20 supports, 0 indexes)."
+      "message": "Target has 25 inbound links (20 supports)."
     }
   ]
 }
@@ -373,7 +369,7 @@ Common multi-step workflows:
 2. `lens search "key concepts" --json` → find related notes
 3. `lens show <id> --json` → read related notes, follow forward_links
 4. `lens write --file batch.json --json` → create notes with links
-5. Check if any existing structure note should index these new notes → update it with `indexes` links
+5. If these notes form a topic worth revisiting, create or update a whiteboard via `lens board create` / `lens board add`.
 
 **Explore a topic** (Index → Walk):
 1. `lens index "topic" --json` → get entry point note

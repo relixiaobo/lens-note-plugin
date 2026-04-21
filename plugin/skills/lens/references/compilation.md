@@ -62,9 +62,10 @@ lens search "<sub-focus keyword>" --expand --json
 #    search ranking but still exist. Filter by title heuristic or just scan titles.
 lens list notes --max-links 2 --json
 
-# 3. Indexes-reachable scan — master may already organize a thesis on this sub-focus
-#    via indexes even if no supports connect it.
-lens links <master_id> --rel indexes --direction forward --json
+# 3. Whiteboard scan — if the sub-focus already has a dedicated workspace,
+#    the theses on it are the first candidates for reuse.
+lens board list --json
+# then lens board show <wb-id> --json
 ```
 
 Decision matrix based on what you find:
@@ -211,7 +212,7 @@ This prevents the common failure mode of creating topic-proximity `supports` lin
 - **Linking because you can**: vague associations are noise, not structure. Not linking is a valid outcome.
 - **Always creating new**: an article that covers known ground should produce updates
 - **Smoothing over contradictions**: tension is insight. Don't resolve it prematurely.
-- **Pre-building structure**: structure notes are sparse post-hoc index entries, created after clusters form naturally. Never one per article.
+- **Pre-building structure**: whiteboards are post-hoc workspaces, created after clusters form naturally. Never one per article.
 - **Linking during the writing pass**: for sessions producing many notes, creating inter-note links while writing risks topic-proximity `supports` links. Write first, connect after — you'll have full context in Pass 2.
-- **Star topology**: linking all new notes directly to one master synthesis node instead of creating thematic L2 nodes first. A write-time `advisory` fires at > 20 inbound (on `{"type": "link"}` writes); `lens lint` warns at > 30 (`super_connectors` check). A target is only a legitimate hub when `is_healthy_hub: true` — it has inbound `indexes` links and `indexes >= supports`. Otherwise apply chain topology (Cluster Check above) when multiple notes share a sub-focus.
-- **Parallel synthesis**: creating a new L2/thesis node when a disconnected one already exists in the graph. Bulk imports leave thesis nodes with zero `supports` inbound that keyword search ranks poorly — always run Cluster Check Step 0 (`lens list notes --max-links 2` + `lens links <master> --rel indexes`) before creating a synthesis node. Reuse before restructure before create.
+- **Star topology**: linking all new notes directly to one master synthesis node instead of creating thematic L2 nodes first. A write-time `advisory` fires at > 20 inbound (on `{"type": "link"}` writes); `lens lint` warns at > 30 (`super_connectors` check). When a target accumulates many inbound links, apply chain topology (Cluster Check above): create thematic L2 nodes and nest.
+- **Parallel synthesis**: creating a new L2/thesis node when a disconnected one already exists in the graph. Bulk imports leave thesis nodes with zero `supports` inbound that keyword search ranks poorly — always run Cluster Check Step 0 (`lens list notes --max-links 2` + `lens board list` + `lens board show`) before creating a synthesis node. Reuse before restructure before create.

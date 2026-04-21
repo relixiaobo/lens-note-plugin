@@ -30,10 +30,10 @@ Each link has:
 | `supports` | Strengthens the target note | No |
 | `contradicts` | Conflicts with the target note | Yes |
 | `refines` | More precise version of the target | No |
+| `continues` | Next step in the target's line of thought (Folgezettel chain) | No |
 | `related` | Loose association — **requires reason** (use as last resort) | No |
-| `indexes` | MOC/index entry point (index → child) | No |
 
-**Choosing a rel:** Try `contradicts` → `refines` → `supports` → `indexes` first. Only use `related` when none fit, and always provide a `reason` that explains HOW (not just topic overlap). `related` without a reason is rejected by the CLI.
+**Choosing a rel:** Try `contradicts` → `refines` → `supports` → `continues` first. Only use `related` when none fit, and always provide a `reason` that explains HOW (not just topic overlap). `related` without a reason is rejected by the CLI. For topic organization (MOC-style grouping), use a whiteboard (`lens board`) instead of a typed link.
 
 ## Body (markdown after frontmatter)
 

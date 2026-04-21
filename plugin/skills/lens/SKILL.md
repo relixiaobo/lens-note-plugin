@@ -12,7 +12,7 @@ lens stores, queries, and links structured knowledge. You do the thinking; lens 
 
 **When in doubt, search.** If a note touches a topic that might already exist in the graph, run `lens search` before writing. This is how connections are discovered. Don't skip the search just because you're in a hurry — but don't search mechanically for every trivial capture either.
 
-**Before creating any synthesis node** (L2, thesis, or structure note), search the graph for existing nodes covering the same sub-focus, including disconnected ones. Use `lens search --expand` AND `lens list notes --max-links 2` — thesis nodes with no inbound `supports` are invisible to ordinary keyword search. See [references/compilation.md](references/compilation.md) Cluster Check Step 0.
+**Before creating any synthesis node** (L2 or thesis), search the graph for existing nodes covering the same sub-focus, including disconnected ones. Use `lens search --expand` AND `lens list notes --max-links 2` — thesis nodes with no inbound `supports` are invisible to ordinary keyword search. See [references/compilation.md](references/compilation.md) Cluster Check Step 0.
 
 **People, books, concepts**: When content mentions a specific person, book, or concept, search if a card for it already exists (`lens search --resolve`). If not, create one alongside the main action: person → Note (bio, key ideas, major works), book/work → Source (`source_type: "book"` etc., with summary in body), concept → Note (what it means, where it comes from). Link these cards to each other and to what the user is working on.
 
@@ -25,8 +25,8 @@ lens has its own vocabulary — do NOT use terms from other knowledge management
 | **Source** | Provenance record (article, book, video). Contains the original content. | "literature note" |
 | **Note** | Your thought — one claim per card. Every Note is a first-class citizen. | "permanent note", "fleeting note", "atomic note" |
 | **Task** | Action item that spans time. A Note with status. | "TODO", "reminder" |
-| **links[]** | Typed semantic edges: supports, contradicts, refines, related, indexes, continues. | "backlinks", "wikilinks" |
-| **Structure note** | A Note that indexes a cluster using `rel: "indexes"`. | "MOC", "hub note", "index note" |
+| **links[]** | Typed semantic edges: supports, contradicts, refines, related, continues. | "backlinks", "wikilinks" |
+| **Whiteboard** | A spatial workspace that aggregates Notes/Sources/Tasks for topic research. Independent from the graph — adding a card to a whiteboard does NOT create a link. | "MOC", "structure note", "hub note", "index note" |
 
 There is no "fleeting note" in lens. If a thought is worth storing, it's a Note. If it's not worth storing, don't write it.
 
@@ -50,8 +50,9 @@ When linking two notes, work through this order:
 1. **A opposes B?** → `contradicts` (most valuable — tensions are where knowledge grows)
 2. **A is a concrete version/implementation/case of B?** → `refines`
 3. **A strengthens or provides evidence for B?** → `supports`
-4. **A indexes/organizes B?** → `indexes`
-5. **None of the above?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
+4. **None of the above?** → `related` (requires a `reason` explaining HOW — topic overlap alone is not enough)
+
+**For topic organization, use a whiteboard instead of a link.** When you want to group notes under a theme or topic for research or review, create a whiteboard (`lens board create --title "..."`) and add the cards as members. Whiteboards are workspace-local aggregations — they don't pollute the graph with structural links.
 
 **`related` is the last resort, not the default.** The CLI rejects `related` without a reason. Run `lens lint --json` to check graph health.
 

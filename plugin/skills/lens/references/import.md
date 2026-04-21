@@ -84,7 +84,7 @@ find <vault-directory> -name '*.md' -type f
 Filter heuristics:
 - Skip files under 50 words
 - Skip files where every line starts with `- [ ]` (pure task lists)
-- Skip templates, MOC files, and system notes (often named with `_` prefix)
+- Skip templates, index/MOC files, and system notes (often named with `_` prefix). If an index file documents a real cluster, create a whiteboard from its members after the core import finishes — do NOT import the index file as a note.
 - Wikilinks `[[note title]]` → convert to plain text or strip
 
 ### Generic text / CSV / other
